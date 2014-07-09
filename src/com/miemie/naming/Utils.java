@@ -1,5 +1,20 @@
 package com.miemie.naming;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import android.util.Xml;
+
 
 public class Utils {
   private static int parse(char c) {
@@ -27,4 +42,78 @@ public class Utils {
     }
     return c;
   }
+
+  private static final String DATABASE_PATH = android.os.Environment.getExternalStorageDirectory()
+      .getAbsolutePath();
+  private static final String DATABASE_FILENAME = "pinyin.db";
+
+  public static SQLiteDatabase openDatabase(Context context) {
+    try {
+      String databaseFilename = DATABASE_PATH + "/" + DATABASE_FILENAME;
+      File dir = new File(DATABASE_PATH);
+
+      if (!dir.exists()) dir.mkdir();
+
+      if (!(new File(databaseFilename)).exists()) {
+        InputStream is = context.getResources().openRawResource(R.raw.pinyin);
+        FileOutputStream fos = new FileOutputStream(databaseFilename);
+
+        byte[] buffer = new byte[8192];
+        int count = 0;
+
+        while ((count = is.read(buffer)) > 0) {
+          fos.write(buffer, 0, count);
+        }
+        fos.close();
+        is.close();
+      }
+
+      SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFilename, null);
+      return database;
+    } catch (Exception e) {} finally {}
+
+    return null;
+  }
+
+
+  public static List<String> doParse(InputStream in) {
+    List<String> persons = null;
+    String person = null;
+
+    String tagName;
+
+    XmlPullParser parser = Xml.newPullParser();
+    try {
+      parser.setInput(in, "utf-8");
+      // 获取事件类型
+      int eventType = parser.getEventType();
+
+      while (eventType != XmlPullParser.END_DOCUMENT) {
+        switch (eventType) {
+        // 文档开始
+          case XmlPullParser.START_DOCUMENT:
+            persons = new ArrayList<String>();
+            break;
+          case XmlPullParser.START_TAG:
+            tagName = parser.getName();
+            if ("Hanyu".equals(tagName)) {
+              person = parser.nextText();
+              Log.e("utils", person);
+            }
+            break;
+          case XmlPullParser.END_TAG:
+            if ("Hanyu".equals(parser.getName())) {
+              persons.add(person);
+            }
+            break;
+        }
+        eventType = parser.next();
+      }
+
+    } catch (XmlPullParserException e) {
+    } catch (IOException e) {
+    }
+    return persons;
+  }
+
 }
