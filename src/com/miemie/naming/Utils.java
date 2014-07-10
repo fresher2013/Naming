@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,20 +44,16 @@ public class Utils {
     return c;
   }
 
-  private static final String DATABASE_PATH = android.os.Environment.getExternalStorageDirectory()
-      .getAbsolutePath();
   private static final String DATABASE_FILENAME = "pinyin.db";
 
   public static SQLiteDatabase openDatabase(Context context) {
     try {
-      String databaseFilename = DATABASE_PATH + "/" + DATABASE_FILENAME;
-      File dir = new File(DATABASE_PATH);
+      File file = new File(context.getFilesDir(), DATABASE_FILENAME);
 
-      if (!dir.exists()) dir.mkdir();
-
-      if (!(new File(databaseFilename)).exists()) {
+      if (!file.exists()) {
+        file.createNewFile();
         InputStream is = context.getResources().openRawResource(R.raw.pinyin);
-        FileOutputStream fos = new FileOutputStream(databaseFilename);
+        FileOutputStream fos = new FileOutputStream(file);
 
         byte[] buffer = new byte[8192];
         int count = 0;
@@ -68,7 +65,7 @@ public class Utils {
         is.close();
       }
 
-      SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFilename, null);
+      SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(file, null);
       return database;
     } catch (Exception e) {} finally {}
 
@@ -85,12 +82,10 @@ public class Utils {
     XmlPullParser parser = Xml.newPullParser();
     try {
       parser.setInput(in, "utf-8");
-      // 获取事件类型
       int eventType = parser.getEventType();
 
       while (eventType != XmlPullParser.END_DOCUMENT) {
         switch (eventType) {
-        // 文档开始
           case XmlPullParser.START_DOCUMENT:
             persons = new ArrayList<String>();
             break;
@@ -110,9 +105,7 @@ public class Utils {
         eventType = parser.next();
       }
 
-    } catch (XmlPullParserException e) {
-    } catch (IOException e) {
-    }
+    } catch (XmlPullParserException e) {} catch (IOException e) {}
     return persons;
   }
 
