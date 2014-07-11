@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -27,6 +33,12 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
   private LayoutInflater mFactory;
   private ListView mList;
   private PinyinAdapter mAdapter;
+  
+  private boolean bNoN = false;
+  private boolean bNoR = false;
+  private boolean bNoZhChSh = false;
+  private boolean bNoBackNasals = false;
+  
     
   private HashSet<String> mUserSelectedPinyins = new HashSet<String>();
   
@@ -44,6 +56,81 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     mList.setAdapter(mAdapter);
     mList.setFastScrollEnabled(true);
 
+    ActionBar actionBar = getActionBar();
+    if (actionBar != null) {
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
+    }
+    
+  }
+
+  
+  
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.menu_pinyin_filter, menu);
+    return super.onCreateOptionsMenu(menu);
+  }
+
+
+
+  @Override
+  @Deprecated
+  protected Dialog onCreateDialog(int id) {
+
+    if (id == 1) {
+      View view = LayoutInflater.from(this).inflate(R.layout.dialog_pinyin_filter, null);
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle(R.string.PreferPinyin);
+      builder.setView(view);
+      final CheckBox check1 = (CheckBox) view.findViewById(R.id.checkBox1);
+      check1.setChecked(bNoR);
+      check1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+          bNoR = isChecked;
+        }
+      });
+      final CheckBox check2 = (CheckBox) view.findViewById(R.id.checkBox2);
+      check2.setChecked(bNoN);
+      check2.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+          bNoN = isChecked;
+        }
+      });
+      final CheckBox check3 = (CheckBox) view.findViewById(R.id.checkBox3);
+      check3.setChecked(bNoZhChSh);
+      check3.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+          bNoZhChSh = isChecked;
+        }
+      });
+      final CheckBox check4 = (CheckBox) view.findViewById(R.id.checkBox4);
+      check4.setChecked(bNoBackNasals);
+      check4.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+          bNoBackNasals = isChecked;
+        }
+      });
+
+      builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
+        public void onClick(DialogInterface dialog, int which) {          
+          mAdapter.refreshDataSet();
+        }
+      });
+      builder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
+        public void onClick(DialogInterface dialog, int which) {}
+      });
+      return builder.create();
+    }
+
+    return super.onCreateDialog(id);
   }
 
   private class PinyinAdapter extends BaseAdapter implements SectionIndexer {
@@ -74,11 +161,12 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
           } while (c.moveToNext());
         }
         mAllPinyins = pinyins.toArray(new String[pinyins.size()]);
+        Arrays.sort(mAllPinyins);
         c.close();
       } else {
         mAllPinyins = null;
       }
-      refreshSelected();
+      refreshDataSet();
     }
 
     @Override
@@ -139,7 +227,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
               CompoundButton b = holder.selected;
               onCheckedChanged(b, false);
               b.setChecked(false);
-              mAdapter.refreshSelected();
+              mAdapter.refreshDataSet();
             }
           });
           view.setTag(holder);
@@ -168,7 +256,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       return view;
     }
     
-    public void refreshSelected() {
+    public void refreshDataSet() {
 
       mDisplayedPinyins.clear();
 
@@ -260,7 +348,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     boolean checked = b.isChecked();
     onCheckedChanged(b, checked);
     b.setChecked(!checked);
-    mAdapter.refreshSelected();
+    mAdapter.refreshDataSet();
   }
   
 }

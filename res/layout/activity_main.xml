@@ -53,17 +53,17 @@
 
                 <TextView
                     android:id="@+id/text11"
-                    android:textAppearance="?android:attr/textAppearanceLarge" 
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/CharacterFilter1" />
+                    android:text="@string/CharacterFilter1"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:id="@+id/text12"
-                    android:layout_below="@id/text11"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/text11"
+                    android:paddingLeft="@dimen/activity_horizontal_margin" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -74,26 +74,33 @@
 
                 <TextView
                     android:id="@+id/text21"
-                    android:textAppearance="?android:attr/textAppearanceLarge" 
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/CharacterFilter2" />
+                    android:text="@string/CharacterFilter2"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:id="@+id/text22"
-                    android:layout_below="@id/text21"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/text21"
+                    android:paddingLeft="@dimen/activity_horizontal_margin" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:background="#28ffffff" />
+
     <Button
         android:id="@+id/submit"
+        style="@style/bold_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:background="@drawable/item_background"
         android:text="@string/Submit" />
 
 </LinearLayout>

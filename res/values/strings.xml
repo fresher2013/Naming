@@ -21,4 +21,8 @@
     <string name="SelectedPinyinsLabel">Selected Pinyins</string>
     <string name="GetSelectedPinyins">Get Selected</string>
     <string name="GetUnSelectedPinyins">Filter Selected</string>
+    <string name="WithoutBackNasals">Without back nasals</string>
+    <string name="WithoutZHCHSH">Without zh/ch/sh</string>
+    <string name="WithoutN">Without n</string>
+    <string name="WithoutR">Without r</string>
 </resources>
