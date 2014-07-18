@@ -11,18 +11,22 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SectionIndexer;
@@ -55,12 +59,38 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     mList = (ListView) findViewById(R.id.pinyin_list);
     mList.setAdapter(mAdapter);
     mList.setFastScrollEnabled(true);
-
+    
+    Intent it = getIntent();
+    if (it != null) {
+      String temp = it.getStringExtra("pinyin");
+      String[] strs = temp.split("@");
+      for(String str:strs){
+        mUserSelectedPinyins.add(str);
+      }
+    }    
+    
     ActionBar actionBar = getActionBar();
     if (actionBar != null) {
         actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
     }
     
+    Button filter = (Button) findViewById(R.id.filter);
+    filter.setOnClickListener(new View.OnClickListener() {
+
+      @Override
+      public void onClick(View v) {
+        showDialog(1);
+      }
+    });
+    
+    Button all = (Button) findViewById(R.id.all);
+    all.setOnClickListener(new View.OnClickListener() {
+
+      @Override
+      public void onClick(View v) {
+        mAdapter.selectAll();
+      }
+    });    
   }
 
   
@@ -71,6 +101,47 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     return super.onCreateOptionsMenu(menu);
   }
 
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.menu_item_ok) {
+      int size = mUserSelectedPinyins.size();
+      if (size > 0) {
+        String[] selected = mUserSelectedPinyins.toArray(new String[size]);
+        StringBuilder sb = new StringBuilder();
+        for (String pinyin : selected) {
+          sb.append(pinyin);
+          sb.append("@");
+        }
+        Intent it = new Intent();
+        String ret = sb.toString();
+        if(ret.endsWith("@")){
+          ret = ret.substring(0, (ret.length()-2));
+        }
+        it.putExtra("pinyin", ret);
+        it.putExtra("size", size);
+        setResult(RESULT_OK, it);
+        PinyinActivity.this.finish();
+        return true;
+      }
+    }
+    return super.onOptionsItemSelected(item);
+  }
+
+  @Override
+  @Deprecated
+  protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
+    if (id == 1) {
+      CheckBox checkBox1 = (CheckBox) dialog.findViewById(R.id.checkBox1);
+      checkBox1.setChecked(bNoR);
+      CheckBox checkBox2 = (CheckBox) dialog.findViewById(R.id.checkBox2);
+      checkBox2.setChecked(bNoN);
+      CheckBox checkBox3 = (CheckBox) dialog.findViewById(R.id.checkBox3);
+      checkBox3.setChecked(bNoZhChSh);
+      CheckBox checkBox4 = (CheckBox) dialog.findViewById(R.id.checkBox4);
+      checkBox4.setChecked(bNoBackNasals);
+    }
+    super.onPrepareDialog(id, dialog, args);
+  }
 
 
   @Override
@@ -124,9 +195,6 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
           mAdapter.refreshDataSet();
         }
       });
-      builder.setNegativeButton(android.R.string.cancel, new OnClickListener() {
-        public void onClick(DialogInterface dialog, int which) {}
-      });
       return builder.create();
     }
 
@@ -166,6 +234,8 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       } else {
         mAllPinyins = null;
       }
+      
+      db.close();
       refreshDataSet();
     }
 
@@ -256,12 +326,20 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       return view;
     }
     
+    public void selectAll() {
+      mUserSelectedPinyins.clear();
+      for (String pinyin : mAllPinyins) {
+        mUserSelectedPinyins.add(pinyin);
+      }
+      refreshDataSet();
+    }
+    
     public void refreshDataSet() {
 
       mDisplayedPinyins.clear();
-
-      mSelectedPinyins = mUserSelectedPinyins.toArray(new String[mUserSelectedPinyins.size()]);
-      Arrays.sort(mSelectedPinyins);
+      
+//      mSelectedPinyins = mUserSelectedPinyins.toArray(new String[mUserSelectedPinyins.size()]);
+//      Arrays.sort(mSelectedPinyins);
 
       ArrayList<String> sections = new ArrayList<String>();
       ArrayList<Integer> positions = new ArrayList<Integer>();
@@ -269,12 +347,16 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       String val = null;
       int count = 0;
 
-      if (mSelectedPinyins.length > 0) {
-        sections.add(mSelectedPinyinsHeaderString);
+      if (mSelectedPinyins!=null && mSelectedPinyins.length > 0) {
+        sections.add("*");
         positions.add(count);
         mDisplayedPinyins.add(mSelectedPinyinsHeaderString);
         count++;
         for (String str : mSelectedPinyins) {
+          if(filter(str)){
+            mUserSelectedPinyins.remove(str);
+            continue;
+          }
           mDisplayedPinyins.add(str);
           count++;
         }
@@ -282,6 +364,11 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       }
 
       for (String pinyin : mAllPinyins) {
+        if (filter(pinyin)) {
+          Log.e("TEST", "refreshDataSet "+pinyin);
+          continue;
+        }
+        
         if (!pinyin.substring(0, 1).equals(val)) {
           val = pinyin.substring(0, 1);
           sections.add((new String(val)).toUpperCase());
@@ -351,4 +438,30 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     mAdapter.refreshDataSet();
   }
   
+  private boolean filter(String pinyin) {
+    if (TextUtils.isEmpty(pinyin)) return false;
+
+    String temp = pinyin.toLowerCase();
+    if (bNoBackNasals) {
+      if (temp.endsWith("ng")) {
+        return true;
+      }
+    }
+    if (bNoN) {
+      if (temp.startsWith("n")) {
+        return true;
+      }
+    }
+    if (bNoR) {
+      if (temp.startsWith("r")) {
+        return true;
+      }
+    }
+    if (bNoZhChSh) {
+      if (temp.startsWith("zh") || temp.startsWith("ch") || temp.startsWith("sh")) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

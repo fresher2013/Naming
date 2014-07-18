@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
-    <string name="app_name">Baby Naming</string>
+    <string name="app_name">Test</string>
     <string name="FamilyName">Family name</string>
     <string name="MaxCharacterInName">Max characters in name</string>
     <string name="CharacterFilter">Name character filter</string>
@@ -13,6 +13,7 @@
     </string-array>
     <string name="CharacterTone">Character tone</string>
     <string name="MaxStrokeInCharacter">Max strokes in Character</string>
+    <string name="MinStrokeInCharacter">Min strokes in Character</string>
     <string name="Tone1">Tone 1</string>
     <string name="Tone4">Tone 4</string>
     <string name="Tone2">Tone 2</string>

@@ -25,13 +25,22 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/timer_start"
+            android:id="@+id/filter"
             style="@style/bold_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:background="@drawable/item_background"
             android:layout_weight="1"
             android:text="Filter" />
+        
+        <Button
+            android:id="@+id/all"
+            style="@style/bold_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/item_background"
+            android:layout_weight="1"
+            android:text="All" />        
     </LinearLayout>
 
 </LinearLayout>

@@ -6,18 +6,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 
 
 public class Utils {
+  
+  private final static String TAG = Utils.class.getSimpleName();
+  
   private static int parse(char c) {
     if (c >= 'a') return (c - 'a' + 10) & 0x0f;
     if (c >= 'A') return (c - 'A' + 10) & 0x0f;
@@ -72,6 +80,131 @@ public class Utils {
     return null;
   }
 
+  private static final String DICT_DATABASE_FILENAME = "zidian.db";
+  public static SQLiteDatabase openDictDatabase(Context context) {
+    try {
+      File file = new File(context.getFilesDir(), DICT_DATABASE_FILENAME);
+
+      if (!file.exists()) {
+        file.createNewFile();
+        InputStream is = context.getResources().openRawResource(R.raw.zidian);
+        FileOutputStream fos = new FileOutputStream(file);
+
+        byte[] buffer = new byte[8192];
+        int count = 0;
+
+        while ((count = is.read(buffer)) > 0) {
+          fos.write(buffer, 0, count);
+        }
+        fos.close();
+        is.close();
+      }
+
+      SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(file, null);
+      return database;
+    } catch (Exception e) {} finally {}
+
+    return null;
+  }
+  
+  public static List<String> query(Context context, int id) {
+
+    SharedPreferences pref = context.getSharedPreferences(Constant.PREF_NAME, Context.MODE_PRIVATE);
+    SQLiteDatabase db = openDatabase(context);
+
+    String pinyin = Utils.getStringPrefValue(pref, Constant.PREF_PINYIN, id);
+    int maxStrokes = Utils.getIntPrefValue(pref, Constant.PREF_MAX_STROKE, id);
+    int minStrokes = Utils.getIntPrefValue(pref, Constant.PREF_MIN_STROKE, id);
+    int tone = Utils.getIntPrefValue(pref, Constant.PREF_TONE, id);
+
+    HashSet<String> pinyins = new HashSet<String>();
+    if (TextUtils.isEmpty(pinyin)) {
+      Cursor c = db.rawQuery("select * from pinyin", null);
+
+      if (c != null) {
+        
+        if (c.getCount() > 0) {
+          c.moveToFirst();
+          do {
+            pinyins.add(c.getString(1));
+          } while (c.moveToNext());
+        }
+        c.close();
+      }
+
+    } else {
+//      Log.e(TAG, "" + pinyin);      
+      String[] apinyins = pinyin.split("@");
+      for(String str:apinyins){
+        pinyins.add(str);
+      }
+    }
+
+    StringBuilder query = new StringBuilder("select hanzi, pinyin from characters");
+    query.append(" where ");
+
+    if (maxStrokes > 0 || minStrokes > 0) {
+      query.append("( ");
+      if (minStrokes > 0) {
+        query.append("strokes >= ");
+        query.append(minStrokes);
+        if (maxStrokes > 0) query.append(" and ");
+      }
+      if (maxStrokes > 0) {
+        query.append(" strokes <= ");
+        query.append(maxStrokes);
+      }
+      if (tone > 0) {
+      query.append(" ) and ");
+      }else {
+        query.append(" )");  
+      }
+    }
+
+    if (tone > 0) {
+      query.append(" ( ");
+      boolean first = true;
+      if ((tone & Constant.TONE_1) == Constant.TONE_1) {
+        query.append("tone=1");
+        first = false;
+      }
+      if ((tone & Constant.TONE_2) == Constant.TONE_2) {
+        if (!first) query.append(" or ");
+        query.append("tone=2");
+        first = false;
+      }
+      if ((tone & Constant.TONE_3) == Constant.TONE_3) {
+        if (!first) query.append(" or ");
+        query.append("tone=3");
+        first = false;
+      }
+      if ((tone & Constant.TONE_4) == Constant.TONE_4) {
+        if (!first) query.append(" or ");
+        query.append("tone=4");
+        first = false;
+      }
+      query.append(" )");
+    }
+
+    Log.e(TAG, query.toString());
+
+    Cursor c = db.rawQuery(query.toString(), null);
+
+    if (c != null) {
+      ArrayList<String> chars = new ArrayList<String>();
+      Log.e(TAG, ""+c.getCount());
+      if (c.getCount() > 0) {        
+        c.moveToFirst();
+        do {
+          if (pinyins.contains(c.getString(1))) chars.add(c.getString(0));
+        } while (c.moveToNext());
+      }
+      c.close();
+      return chars;
+    }
+
+    return null;
+  }  
 
   public static List<String> doParse(InputStream in) {
     List<String> persons = null;
@@ -109,4 +242,51 @@ public class Utils {
     return persons;
   }
 
+  public static String getStringPrefValue(SharedPreferences pref, String key, int id) {
+    StringBuilder sb = new StringBuilder(key);
+    if (id != 0) sb.append(id);
+
+    return pref.getString(sb.toString(), null);
+  }
+
+  public static int getIntPrefValue(SharedPreferences pref, String key, int id) {
+    StringBuilder sb = new StringBuilder(key);
+    if (id != 0) sb.append(id);
+    return pref.getInt(sb.toString(), 0);
+  }
+  
+  public static boolean saveStringPrefValue(SharedPreferences pref, String key, String value, int id) {
+
+    if (pref != null) {
+      StringBuilder sb = new StringBuilder(key);
+      if (id != 0) sb.append(id);
+      SharedPreferences.Editor editor = pref.edit();
+      editor.putString(sb.toString(), value);
+      editor.apply();
+      return true;
+    }
+
+    return false;
+  }
+
+  public static boolean saveIntPrefValue(SharedPreferences pref, String key, int value, int id) {
+    if (pref != null) {
+      StringBuilder sb = new StringBuilder(key);
+      if (id != 0) sb.append(id);
+      SharedPreferences.Editor editor = pref.edit();
+      editor.putInt(sb.toString(), value);
+      editor.apply();
+      return true;
+    }
+
+    return false;
+  }
+  
+  public static File getAppDir() {
+    File dir = new File(android.os.Environment.getExternalStorageDirectory(), "Naming");
+    if (!dir.exists()) {
+      dir.mkdir();
+    }
+    return dir;
+  }
 }
