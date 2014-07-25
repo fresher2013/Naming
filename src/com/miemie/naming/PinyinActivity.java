@@ -63,9 +63,11 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     Intent it = getIntent();
     if (it != null) {
       String temp = it.getStringExtra("pinyin");
-      String[] strs = temp.split("@");
-      for(String str:strs){
-        mUserSelectedPinyins.add(str);
+      if (!TextUtils.isEmpty(temp)) {
+        String[] strs = temp.split("@");
+        for (String str : strs) {
+          mUserSelectedPinyins.add(str);
+        }
       }
     }    
     
@@ -329,7 +331,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     public void selectAll() {
       mUserSelectedPinyins.clear();
       for (String pinyin : mAllPinyins) {
-        mUserSelectedPinyins.add(pinyin);
+        if (!filter(pinyin)) mUserSelectedPinyins.add(pinyin);
       }
       refreshDataSet();
     }

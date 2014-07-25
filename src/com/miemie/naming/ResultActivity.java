@@ -15,6 +15,7 @@ import java.util.Scanner;
 import com.shoushuo.android.tts.ITts;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +23,9 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
@@ -53,8 +56,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
   private Button mPass;
     
   private Scanner mScan;
-  private FileOutputStream mFNewOut;
-//  private FileOutputStream mFAbandonOut;
+  private FileWriter mFNewOut;
   
   private ITts ttsService;
   private boolean ttsBound;
@@ -62,6 +64,20 @@ public class ResultActivity extends Activity implements View.OnClickListener{
   private SQLiteDatabase mDictDB;
   
   private HashSet<String> mAbandonList = new HashSet<String>();
+  
+  ProgressDialog mDialog;
+
+  private Handler mHandler = new Handler(){
+
+    @Override
+    public void handleMessage(Message msg) {
+      super.handleMessage(msg);
+      if (msg.what == 1) {
+        ResultActivity.this.finish();
+      }
+    }
+    
+  };
   
   private ServiceConnection mConnection = new ServiceConnection() {
 
@@ -142,7 +158,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     try {
       output.createNewFile();
       mScan = new Scanner(input);      
-      mFNewOut = new FileOutputStream(output, false);
+      mFNewOut = new FileWriter(output, true);
 //      mFAbandonOut = new FileOutputStream(abandon, true);
     } catch (FileNotFoundException e) {} catch (IOException e) {}
 
@@ -217,6 +233,16 @@ public class ResultActivity extends Activity implements View.OnClickListener{
           Context.BIND_AUTO_CREATE);
     }
   }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    if (mDialog != null) {
+      mDialog.dismiss();
+      mDialog = null;
+    }
+  }
+
   
   @Override
   protected void onDestroy() {
@@ -252,26 +278,56 @@ public class ResultActivity extends Activity implements View.OnClickListener{
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.menu_item_ok) {
+
+      mDialog = new ProgressDialog(ResultActivity.this);
+      mDialog.setCancelable(false);
+      mDialog.show();
       
-      saveToAbandonFile();
-      
-//      new Thread(){
-//        
-//        public void run() {
-//          final File dir = Utils.getAppDir();
-//          File temp = new File(dir, "result.txt.temp");
-//          temp.createNewFile();
-//          try {
-//            FileWriter fw = new FileWriter(temp);
-//            fw.write(str);
-//          } catch (IOException e) {
-//          }    
-//          
-//        };
-//      }.start();
-      
-      finish();
-      
+      new Thread() {
+
+        public void run() {
+
+          saveToAbandonFile();
+
+          final File dir = Utils.getAppDir();
+          File temp = new File(dir, "result.txt.temp");
+          if (temp.exists()) {
+            temp.delete();
+          }
+          FileWriter fw = null;
+          try {
+            fw = new FileWriter(temp);
+            temp.createNewFile();
+            while (mScan.hasNextLine()) {
+              fw.write(mScan.nextLine());
+            }
+
+            fw.flush();
+            fw.close();
+            fw = null;
+
+            File result = new File(dir, "result.txt");
+            if (result.exists()) {
+              result.delete();
+              result = null;
+            }
+
+            temp.renameTo(new File(dir, "result.txt"));
+
+          } catch (Exception e) {} finally {
+            if (fw != null) {
+              try {
+                fw.close();
+              } catch (IOException e) {}
+              fw = null;
+            }
+          }
+          
+          mHandler.sendEmptyMessage(1);
+
+        };
+      }.start();
+
       return true;
     }
     return super.onOptionsItemSelected(item);
@@ -381,11 +437,11 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     }
   }
   
-  private void saveToFile(FileOutputStream fout, String character) {
+  private void saveToFile(FileWriter fout, String character) {
     if (fout != null && !TextUtils.isEmpty(character)) {
-      try {
+      try {        
+        fout.write(character);
         fout.write('\n');
-        fout.write(character.getBytes());
         fout.flush();
       } catch (IOException e) {
       }
@@ -395,25 +451,25 @@ public class ResultActivity extends Activity implements View.OnClickListener{
   private void saveToAbandonFile() {
     final File dir = Utils.getAppDir();
     File abandon = new File(dir, "abandon.txt");
-    if (abandon.exists()) {
-      abandon.delete();
-    }
-    FileOutputStream fout = null;
+
+    FileWriter fw = null;
     try {
-      abandon.createNewFile();
-      fout = new FileOutputStream(abandon, true);
-      for (String str : mAbandonList) {
-        fout.write(str.getBytes());
-        fout.write('\n');
+      if (!abandon.exists()) {
+        abandon.createNewFile();
       }
-      fout.flush();
+      fw = new FileWriter(abandon, true);
+      for (String str : mAbandonList) {
+        fw.write(str);
+        fw.write('\n');
+      }
+      fw.flush();
     } catch (FileNotFoundException e1) {
 
     } catch (IOException e2) {
 
     } finally {
       try {
-        if (fout != null) fout.close();
+        if (fw != null) fw.close();
       } catch (IOException e) {}
     }
   }

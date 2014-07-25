@@ -3,6 +3,7 @@ package com.miemie.naming;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -155,6 +156,7 @@ public class MainActivity extends Activity{
           Utils.saveStringPrefValue(mPref, Constant.PREF_FAMILYNAME, familyname, 0);
         }
         mDialog = new ProgressDialog(MainActivity.this);
+        mDialog.setCancelable(false);
         mDialog.show();
         
         new Thread(){
@@ -176,34 +178,43 @@ public class MainActivity extends Activity{
               result.createNewFile();
             } catch (IOException e) {}
             
-            FileOutputStream fout = null;
-            
             if (mResult1 == null) {
               mResult1 = Utils.query(MainActivity.this, 1);
             }
             if (mResult2 == null) {
               mResult2 = Utils.query(MainActivity.this, 2);
             }
+
+            FileWriter fw = null;
             
             try {
-              fout = new FileOutputStream(result);
+              fw = new FileWriter(result);
+              
+              int size1 = mResult1.size();
+              int size2 = mResult2.size();
+              long size = (size1 * size2);
 
-              for (String character1 : mResult1) {
-                for (String character2 : mResult2) {
-                  StringBuilder sb = new StringBuilder();
-                  sb.append(familyname);
-                  sb.append(character1);
-                  sb.append(character2);
-                  fout.write(sb.toString().getBytes());
-                  fout.write('\n');
-                }
+              for (int i = 0; i < size; i++) {
+                String character1 = mResult1.get((int) (i%size1));
+                String character2 = mResult2.get((int) (i%size2));
+                StringBuilder sb = new StringBuilder();
+                sb.append(familyname);
+                sb.append(character1);
+                sb.append(character2);
+                fw.write(sb.toString());
+                fw.write('\n');
+                StringBuilder sb2 = new StringBuilder();
+                sb2.append(familyname);
+                sb2.append(character2);
+                sb2.append(character1);
+                fw.write(sb2.toString());
+                fw.write('\n');
               }
-
-              fout.flush();
-              fout.close();
+              fw.flush();
+              fw.close();
             } catch (FileNotFoundException e) {} catch (IOException e) {} finally {
-              if (fout != null) try {
-                fout.close();
+              if (fw != null) try {
+                fw.close();
               } catch (IOException e) {}
             }
             Message msg = mHandler.obtainMessage();
@@ -272,6 +283,14 @@ public class MainActivity extends Activity{
       MainActivity.this.startActivity(it);
       
       return true;
+    } else if(item.getItemId() == R.id.menu_item_updatedb){
+      
+      new Thread() {
+        public void run() {
+          Utils.updateDB(MainActivity.this);
+        };
+      }.start();
+
     }
     return super.onOptionsItemSelected(item);
   }  

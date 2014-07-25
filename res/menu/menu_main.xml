@@ -16,8 +16,10 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/menu_item_result"
-        android:title="@android:string/ok"
+        android:title="Go to Result"
         android:orderInCategory="1" />
+    <item android:id="@+id/menu_item_updatedb"
+        android:title="Update db"/>    
 </menu>
 
 

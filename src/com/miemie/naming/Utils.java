@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -154,11 +156,7 @@ public class Utils {
         query.append(" strokes <= ");
         query.append(maxStrokes);
       }
-      if (tone > 0) {
       query.append(" ) and ");
-      }else {
-        query.append(" )");  
-      }
     }
 
     if (tone > 0) {
@@ -183,24 +181,32 @@ public class Utils {
         query.append("tone=4");
         first = false;
       }
-      query.append(" )");
+      query.append(" ) and ");
     }
 
-    Log.e(TAG, query.toString());
+    query.append("( popular = 1 )");
+    
+    Log.d(TAG, query.toString());
 
     Cursor c = db.rawQuery(query.toString(), null);
 
     if (c != null) {
-      ArrayList<String> chars = new ArrayList<String>();
+      HashSet<String> chars = new HashSet<String>();
       Log.e(TAG, ""+c.getCount());
       if (c.getCount() > 0) {        
         c.moveToFirst();
         do {
-          if (pinyins.contains(c.getString(1))) chars.add(c.getString(0));
+          if (pinyins.contains(c.getString(1)) && !chars.contains(c.getString(0))) {
+            Log.e(TAG, "" + c.getString(1) + " " + c.getString(0));
+            chars.add(c.getString(0));
+          }
         } while (c.moveToNext());
       }
       c.close();
-      return chars;
+      
+      ArrayList<String> ret = new ArrayList<String>();
+      ret.addAll(chars);
+      return ret;
     }
 
     return null;
@@ -288,5 +294,47 @@ public class Utils {
       dir.mkdir();
     }
     return dir;
+  }
+  
+  public static void updateDB(Context context) {
+    SQLiteDatabase db = openDatabase(context);
+    Scanner scanner = null;
+    try {
+      scanner = new Scanner(context.getAssets().open("name_mostused.txt"));
+
+      while (scanner.hasNextLine()) {
+        String line = scanner.nextLine();
+        if (!TextUtils.isEmpty(line)) {
+
+          Cursor cursor =
+              db.rawQuery("select _id,hanzi from characters where hanzi=?", new String[] {line});
+          if (cursor != null) {
+            if (cursor.getCount() > 0) {
+              cursor.moveToFirst();
+              do {
+                int id = cursor.getInt(0);
+                ContentValues values = new ContentValues();
+                values.put("popular", 1);
+                db.update("characters", values, "_id = " + id, null);
+              } while (cursor.moveToNext());
+            }
+            cursor.close();
+            cursor = null;
+          }
+        }
+      }
+
+    } catch (Exception e) {
+
+    } finally {
+      if (scanner != null) {
+        scanner.close();
+        scanner = null;
+      }
+      if (db != null) {
+        db.close();
+        db = null;
+      }
+    }
   }
 }

@@ -54,7 +54,7 @@ public class NamingProvider extends ContentProvider {
     @Override
     public void onCreate(SQLiteDatabase db) {
       db.execSQL("CREATE TABLE characters (" + "_id INTEGER PRIMARY KEY," + "hanzi TEXT, "
-          + "unicode INTEGER, " + "strokes INTEGER, " + "pinyin TEXT, " + "tone INTEGER);");
+          + "unicode INTEGER, " + "strokes INTEGER, " + "pinyin TEXT, " + "mostused INTEGER," + "tone INTEGER);");
       db.execSQL("CREATE TABLE pinyin (" + "_id INTEGER PRIMARY KEY, " + "pinyin TEXT);");      
     }
 
