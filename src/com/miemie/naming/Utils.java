@@ -1,7 +1,9 @@
 package com.miemie.naming;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -134,8 +136,7 @@ public class Utils {
         c.close();
       }
 
-    } else {
-//      Log.e(TAG, "" + pinyin);      
+    } else { 
       String[] apinyins = pinyin.split("@");
       for(String str:apinyins){
         pinyins.add(str);
@@ -335,6 +336,55 @@ public class Utils {
         db.close();
         db = null;
       }
+    }
+  }
+  
+  public static HashSet<String> getAbandonList() {
+    HashSet<String> set = new HashSet<String>();
+
+    final File dir = Utils.getAppDir();
+    File abandon = new File(dir, "abandon.txt");
+    Scanner scan = null;
+    try {
+      scan = new Scanner(abandon);
+      if (scan != null) {
+        while (scan.hasNextLine()) {
+          set.add(scan.nextLine());
+        }
+      }
+    } catch (FileNotFoundException e) {} finally {
+      if (scan != null) scan.close();
+    }
+
+    return set;
+  }
+  
+  public static void saveToAbandonFile(HashSet<String> set) {
+    if(set ==null || set.size() == 0)
+      return;
+    
+    final File dir = Utils.getAppDir();
+    File abandon = new File(dir, "abandon.txt");
+
+    FileWriter fw = null;
+    try {
+      if (!abandon.exists()) {
+        abandon.createNewFile();
+      }
+      fw = new FileWriter(abandon, true);
+      for (String str : set) {
+        fw.write(str);
+        fw.write('\n');
+      }
+      fw.flush();
+    } catch (FileNotFoundException e1) {
+
+    } catch (IOException e2) {
+
+    } finally {
+      try {
+        if (fw != null) fw.close();
+      } catch (IOException e) {}
     }
   }
 }

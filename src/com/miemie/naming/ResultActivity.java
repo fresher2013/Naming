@@ -139,18 +139,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     new Thread(){
       
       public void run() {
-        File abandon = new File(dir, "abandon.txt");
-        Scanner scan;
-        try {
-          scan = new Scanner(abandon);
-          if(scan!=null){
-            while(scan.hasNextLine()){
-              mAbandonList.add(scan.nextLine());
-            }
-          }
-        } catch (FileNotFoundException e) {
-        }
-
+        mAbandonList = Utils.getAbandonList();
       };
       
     }.start();
@@ -287,7 +276,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
 
         public void run() {
 
-          saveToAbandonFile();
+          Utils.saveToAbandonFile(mAbandonList);
 
           final File dir = Utils.getAppDir();
           File temp = new File(dir, "result.txt.temp");
@@ -300,6 +289,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
             temp.createNewFile();
             while (mScan.hasNextLine()) {
               fw.write(mScan.nextLine());
+              fw.write("\n");
             }
 
             fw.flush();
@@ -448,30 +438,6 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     }
   }
 
-  private void saveToAbandonFile() {
-    final File dir = Utils.getAppDir();
-    File abandon = new File(dir, "abandon.txt");
 
-    FileWriter fw = null;
-    try {
-      if (!abandon.exists()) {
-        abandon.createNewFile();
-      }
-      fw = new FileWriter(abandon, true);
-      for (String str : mAbandonList) {
-        fw.write(str);
-        fw.write('\n');
-      }
-      fw.flush();
-    } catch (FileNotFoundException e1) {
-
-    } catch (IOException e2) {
-
-    } finally {
-      try {
-        if (fw != null) fw.close();
-      } catch (IOException e) {}
-    }
-  }
 }
 
