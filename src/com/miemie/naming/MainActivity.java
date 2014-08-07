@@ -46,29 +46,29 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class MainActivity extends Activity{
+public class MainActivity extends Activity {
 
   private final static String TAG = MainActivity.class.getSimpleName();
 
-  private SharedPreferences mPref; 
-  
+  private SharedPreferences mPref;
+
 
   EditText mFamilyName;
   Spinner mSpinner;
   RelativeLayout mFilter1;
   RelativeLayout mFilter2;
-  
+
   TextView mInfo1;
   TextView mInfo2;
-  
+
   List<String> mResult1;
   List<String> mResult2;
-  
-  SQLiteDatabase mDB; 
-  
+
+  SQLiteDatabase mDB;
+
   ProgressDialog mDialog;
 
-  private Handler mHandler = new Handler(){
+  private Handler mHandler = new Handler() {
 
     @Override
     public void handleMessage(Message msg) {
@@ -83,9 +83,8 @@ public class MainActivity extends Activity{
         }
       }
     }
-    
+
   };
-  
 
 
   @Override
@@ -94,19 +93,19 @@ public class MainActivity extends Activity{
     setContentView(R.layout.activity_main);
 
     mDB = Utils.openDatabase(this);
-    
+
     mPref = getSharedPreferences(Constant.PREF_NAME, Context.MODE_PRIVATE);
-    
+
     mFamilyName = (EditText) findViewById(R.id.family_name);
     mFamilyName.setText(Utils.getStringPrefValue(mPref, Constant.PREF_FAMILYNAME, 0));
     mSpinner = (Spinner) findViewById(R.id.character_no);
-    
+
     int maxchars = Utils.getIntPrefValue(mPref, Constant.PREF_MAX_CHARS, 0);
-    mSpinner.setSelection((maxchars>0)?(maxchars-1):0);
-    
+    mSpinner.setSelection((maxchars > 0) ? (maxchars - 1) : 0);
+
     mInfo1 = (TextView) findViewById(R.id.text12);
     mInfo2 = (TextView) findViewById(R.id.text22);
-    
+
     mFilter1 = (RelativeLayout) findViewById(R.id.name_filter1);
     mFilter1.setOnClickListener(new OnClickListener() {
 
@@ -127,7 +126,7 @@ public class MainActivity extends Activity{
         MainActivity.this.startActivityForResult(it, 1);
       }
     });
-        
+
     mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
       @Override
@@ -143,23 +142,24 @@ public class MainActivity extends Activity{
 
       @Override
       public void onNothingSelected(AdapterView<?> parent) {
- 
-      }});
-    
+
+      }
+    });
+
     Button submit = (Button) findViewById(R.id.submit);
     submit.setOnClickListener(new View.OnClickListener() {
 
       @Override
       public void onClick(View v) {
         final String familyname = mFamilyName.getEditableText().toString();
-        if(!TextUtils.isEmpty(familyname)){
+        if (!TextUtils.isEmpty(familyname)) {
           Utils.saveStringPrefValue(mPref, Constant.PREF_FAMILYNAME, familyname, 0);
         }
         mDialog = new ProgressDialog(MainActivity.this);
         mDialog.setCancelable(false);
         mDialog.show();
-        
-        new Thread(){
+
+        new Thread() {
 
           @Override
           public void run() {
@@ -169,7 +169,7 @@ public class MainActivity extends Activity{
             sb1.append("result-");
             sb1.append(new SimpleDateFormat("MMddHHmm").format(new Date(System.currentTimeMillis())));
             sb1.append(".txt");
-            
+
             File result = new File(Utils.getAppDir(), sb1.toString());
             if (result.exists()) {
               result.delete();
@@ -177,7 +177,7 @@ public class MainActivity extends Activity{
             try {
               result.createNewFile();
             } catch (IOException e) {}
-            
+
             if (mResult1 == null) {
               mResult1 = Utils.query(MainActivity.this, 1);
             }
@@ -186,17 +186,17 @@ public class MainActivity extends Activity{
             }
 
             FileWriter fw = null;
-            
+
             try {
               fw = new FileWriter(result);
-              
+
               int size1 = mResult1.size();
               int size2 = mResult2.size();
               long size = (size1 * size2);
 
               for (int i = 0; i < size; i++) {
-                String character1 = mResult1.get((int) (i%size1));
-                String character2 = mResult2.get((int) (i%size2));
+                String character1 = mResult1.get((int) (i % size1));
+                String character2 = mResult2.get((int) (i % size2));
                 StringBuilder sb = new StringBuilder();
                 sb.append(familyname);
                 sb.append(character1);
@@ -222,9 +222,9 @@ public class MainActivity extends Activity{
             msg.obj = result.getAbsolutePath();
             mHandler.sendMessage(msg);
           }
-          
+
         }.start();
-        
+
       }
     });
   }
@@ -234,9 +234,8 @@ public class MainActivity extends Activity{
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    
-    if(mDB!=null)
-      mDB.close();
+
+    if (mDB != null) mDB.close();
 
   }
 
@@ -265,10 +264,10 @@ public class MainActivity extends Activity{
         }
       }
     }
-    
+
     super.onActivityResult(requestCode, resultCode, data);
   }
-  
+
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -278,29 +277,34 @@ public class MainActivity extends Activity{
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.menu_item_result) {
-      
+
       Intent it = new Intent(MainActivity.this, ResultActivity.class);
       MainActivity.this.startActivity(it);
-      
+
       return true;
-    } else if(item.getItemId() == R.id.menu_item_updatedb){
-      
+    } else if (item.getItemId() == R.id.menu_item_updatedb) {
+
       new Thread() {
         public void run() {
           Utils.updateDB(MainActivity.this);
         };
       }.start();
 
+    } else if (item.getItemId() == R.id.menu_item_abandonList) {
+
+      Intent it = new Intent(MainActivity.this, AbandonChars.class);
+      MainActivity.this.startActivity(it);
+
     }
     return super.onOptionsItemSelected(item);
-  }  
-  
-  private String buildInfoString(int size){
+  }
+
+  private String buildInfoString(int size) {
     StringBuilder sb = new StringBuilder();
     sb.append("Select ");
     sb.append(size);
     sb.append(" Chars.");
     return sb.toString();
   }
-  
+
 }

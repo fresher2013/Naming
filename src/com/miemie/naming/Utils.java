@@ -365,7 +365,8 @@ public class Utils {
     
     final File dir = Utils.getAppDir();
     File abandon = new File(dir, "abandon.txt");
-
+    abandon.delete();
+    
     FileWriter fw = null;
     try {
       if (!abandon.exists()) {

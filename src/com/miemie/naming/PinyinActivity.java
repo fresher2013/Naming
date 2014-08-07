@@ -42,6 +42,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
   private boolean bNoR = false;
   private boolean bNoZhChSh = false;
   private boolean bNoBackNasals = false;
+  private boolean bNoClosedMouth = false;
   
     
   private HashSet<String> mUserSelectedPinyins = new HashSet<String>();
@@ -189,6 +190,15 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
           bNoBackNasals = isChecked;
+        }
+      });
+      final CheckBox check5 = (CheckBox) view.findViewById(R.id.checkBox5);
+      check5.setChecked(bNoClosedMouth);
+      check5.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+          bNoClosedMouth = isChecked;
         }
       });
 
@@ -367,7 +377,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
 
       for (String pinyin : mAllPinyins) {
         if (filter(pinyin)) {
-          Log.e("TEST", "refreshDataSet "+pinyin);
+//          Log.e("TEST", "refreshDataSet "+pinyin);
           continue;
         }
         
@@ -461,6 +471,11 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     }
     if (bNoZhChSh) {
       if (temp.startsWith("zh") || temp.startsWith("ch") || temp.startsWith("sh")) {
+        return true;
+      }
+    }
+    if (bNoClosedMouth) {
+      if (temp.equalsIgnoreCase("yu")) {
         return true;
       }
     }

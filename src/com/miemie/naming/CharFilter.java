@@ -1,28 +1,29 @@
 package com.miemie.naming;
 
-import android.R.menu;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class CharFilter extends Activity implements OnCheckedChangeListener{
 
-  private EditText mMaxStroke;
-  private EditText mMinStroke;
+  private TextView mMaxHeader;
+  private TextView mMinHeader;
+
+  private SeekBar mMaxStroke;
+  private SeekBar mMinStroke;
   private TextView mInfo;
 
   private int mID = 1;
@@ -51,11 +52,67 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
       mPinyinSize = (strs != null ? strs.length : 0);
     }
 
-    mMaxStroke = (EditText) findViewById(R.id.max_stroke);
-    mMaxStroke.setText(String.valueOf(Utils.getIntPrefValue(mPref, Constant.PREF_MAX_STROKE, mID)));
+    mMaxHeader = (TextView) findViewById(R.id.max_header);
+    mMinHeader = (TextView) findViewById(R.id.min_header);
+    
+    mMaxStroke = (SeekBar) findViewById(R.id.max_stroke);
+    int max = Utils.getIntPrefValue(mPref, Constant.PREF_MAX_STROKE, mID);
+    mMinStroke = (SeekBar) findViewById(R.id.min_stroke);    
+    int min = Utils.getIntPrefValue(mPref, Constant.PREF_MIN_STROKE, mID);
+    
+    mMaxStroke.setMax(30);
+    mMaxStroke.setProgress(max);
+    mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":").append(max).toString());
+    mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":").append(min).toString());
+    
+    mMinStroke.setMax(20);
+    mMinStroke.setProgress(min);
+    
+    mMaxStroke.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+      
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+        if (seekBar.getProgress() < mMinStroke.getProgress()) {
+          seekBar.setProgress(mMinStroke.getProgress());
+        }
+        mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":").append(seekBar.getProgress()).toString());
+      }
+      
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+        // TODO Auto-generated method stub
+        
+      }
+      
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        // TODO Auto-generated method stub
+        mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":").append(progress).toString());
+      }
+    });
 
-    mMinStroke = (EditText) findViewById(R.id.min_stroke);
-    mMinStroke.setText(String.valueOf(Utils.getIntPrefValue(mPref, Constant.PREF_MIN_STROKE, mID)));    
+    mMinStroke.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+      
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+        if (seekBar.getProgress() > mMaxStroke.getProgress()) {
+          mMaxStroke.setProgress(seekBar.getProgress());
+        }
+        mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":").append(seekBar.getProgress()).toString());
+      }
+      
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+        // TODO Auto-generated method stub
+        
+      }
+      
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":").append(progress).toString());
+      }
+    });
+        
     
     mInfo = (TextView) findViewById(R.id.text2);
     mInfo.setText(buildInfoString(mPinyinSize));
@@ -144,18 +201,10 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.menu_item_ok) {
-      String value = mMaxStroke.getEditableText().toString();
-      int strokes = 0;
-      if (!TextUtils.isEmpty(value) && TextUtils.isDigitsOnly(value)) {
-        strokes = Integer.parseInt(value);
-      }
+      int strokes = mMaxStroke.getProgress();
       Utils.saveIntPrefValue(mPref, Constant.PREF_MAX_STROKE, strokes, mID);
       
-      strokes = 0;
-      value = mMinStroke.getEditableText().toString();
-      if (!TextUtils.isEmpty(value) && TextUtils.isDigitsOnly(value)) {
-        strokes = Integer.parseInt(value);
-      }      
+      strokes = mMinStroke.getProgress();    
       Utils.saveIntPrefValue(mPref, Constant.PREF_MIN_STROKE, strokes, mID);
       Utils.saveIntPrefValue(mPref, Constant.PREF_TONE, mTone, mID);
       Utils.saveStringPrefValue(mPref, Constant.PREF_PINYIN, mPinyin, mID);

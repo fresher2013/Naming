@@ -19,7 +19,9 @@
         android:title="Go to Result"
         android:orderInCategory="1" />
     <item android:id="@+id/menu_item_updatedb"
-        android:title="Update db"/>    
+        android:title="Update db"/>
+    <item android:id="@+id/menu_item_abandonList"
+        android:title="Abandon List"/>      
 </menu>
 
 
