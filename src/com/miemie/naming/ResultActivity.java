@@ -188,7 +188,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
 
   @Override
   public void onClick(View v) {
-    int id = (int) v.getTag();
+    int id = (int) v.getId();
     if (id == R.id.speak) {
       if (!TextUtils.isEmpty(mCurrent)) {
         try {
@@ -365,7 +365,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
           c.moveToFirst();
           String jijie = c.getString(0);
           StringBuilder sb = new StringBuilder();
-          int index = jijie.indexOf("²¿Ê×");
+          int index = jijie.indexOf("ï¿½ï¿½ï¿½ï¿½");
           if (index == -1) {
             sb.append(jijie);
           } else {

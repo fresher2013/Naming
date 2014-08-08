@@ -168,7 +168,7 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
   @Override
   public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
     if (buttonView instanceof CheckBox) {
-      int id = (int) buttonView.getTag();
+      int id = (int) buttonView.getId();
       int filter = Constant.TONE_1;
       if (id == R.id.tone1) {
         filter = Constant.TONE_1;
