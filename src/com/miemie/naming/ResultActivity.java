@@ -1,18 +1,11 @@
 package com.miemie.naming;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Scanner;
-
-import com.shoushuo.android.tts.ITts;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -37,37 +30,41 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ResultActivity extends Activity implements View.OnClickListener{
-  
+import com.shoushuo.android.tts.ITts;
+
+public class ResultActivity extends Activity implements View.OnClickListener {
+
   private final static String TAG = ResultActivity.class.getSimpleName();
-  
+
   private String mCurrent;
-  
+
   private TextView mName;
+  private TextView mNum;
   private TextView mInfo1;
   private TextView mInfo2;
-  
-  
+
+
   private ImageButton mSpeak;
   private Button mNo1;
   private Button mNo2;
   private Button mNoBoth;
   private Button mLike;
   private Button mPass;
-    
+
   private Scanner mScan;
   private FileWriter mFNewOut;
-  
+
   private ITts ttsService;
   private boolean ttsBound;
 
   private SQLiteDatabase mDictDB;
-  
-  private HashSet<String> mAbandonList = new HashSet<String>();
-  
-  ProgressDialog mDialog;
 
-  private Handler mHandler = new Handler(){
+  private HashSet<String> mAbandonList = new HashSet<String>();
+
+  ProgressDialog mDialog;
+  private int mCount;
+
+  private Handler mHandler = new Handler() {
 
     @Override
     public void handleMessage(Message msg) {
@@ -76,9 +73,9 @@ public class ResultActivity extends Activity implements View.OnClickListener{
         ResultActivity.this.finish();
       }
     }
-    
+
   };
-  
+
   private ServiceConnection mConnection = new ServiceConnection() {
 
     @Override
@@ -98,22 +95,22 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       }
     }
   };
-  
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_result);
 
-    new Thread(){
+    new Thread() {
 
       @Override
       public void run() {
         super.run();
         mDictDB = Utils.openDictDatabase(ResultActivity.this);
       }
-      
+
     }.start();
-    
+
     Intent it = getIntent();
 
     final File dir = Utils.getAppDir();
@@ -121,7 +118,8 @@ public class ResultActivity extends Activity implements View.OnClickListener{
 
     if (it != null) {
       String filename = it.getStringExtra("file");
-      if (!TextUtils.isEmpty(filename)) input = new File(filename);
+      if (!TextUtils.isEmpty(filename))
+        input = new File(filename);
     }
 
     if (!input.exists()) {
@@ -130,31 +128,36 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       return;
     }
 
-    
-    File output = new File(dir, "new_"+input.getName());
+
+    File output = new File(dir, "new_" + input.getName());
     if (output.exists()) {
       output.delete();
     }
 
-    new Thread(){
-      
+    new Thread() {
+
       public void run() {
-        mAbandonList = Utils.getAbandonList();
+        HashSet<String> temp = Utils.getAbandonList(ResultActivity.this);
+        temp.addAll(mAbandonList);
+        mAbandonList = temp;
       };
-      
+
     }.start();
-    
+
     try {
       output.createNewFile();
-      mScan = new Scanner(input);      
+      mScan = new Scanner(input);
       mFNewOut = new FileWriter(output, true);
-//      mFAbandonOut = new FileOutputStream(abandon, true);
-    } catch (FileNotFoundException e) {} catch (IOException e) {}
+      // mFAbandonOut = new FileOutputStream(abandon, true);
+    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
+    }
 
 
     mCurrent = getNext();
 
     mName = (TextView) findViewById(R.id.name);
+    mNum =  (TextView) findViewById(R.id.number);
 
     mSpeak = (ImageButton) findViewById(R.id.speak);
     mSpeak.setTag(R.id.speak);
@@ -193,20 +196,25 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       if (!TextUtils.isEmpty(mCurrent)) {
         try {
           ttsService.speak(mCurrent, 1);
-        } catch (RemoteException e) {}
+        } catch (RemoteException e) {
+        }
       }
       return;
     } else if (id == R.id.nomore2char) {
       mAbandonList.add(getChar(mCurrent, 1));
-      mAbandonList.add(getChar(mCurrent, 2));
+      mAbandonList.add(getChar(mCurrent, 2));      
+      Utils.updateAbandonDB(ResultActivity.this, null, getChar(mCurrent, 1), 1);
+      Utils.updateAbandonDB(ResultActivity.this, null, getChar(mCurrent, 2), 1);
     } else if (id == R.id.nomorechar1) {
       mAbandonList.add(getChar(mCurrent, 1));
+      Utils.updateAbandonDB(ResultActivity.this, null, getChar(mCurrent, 1), 1);
     } else if (id == R.id.nomorechar2) {
       mAbandonList.add(getChar(mCurrent, 2));
+      Utils.updateAbandonDB(ResultActivity.this, null, getChar(mCurrent, 2), 1);
     } else if (id == R.id.yes) {
       saveToFile(mFNewOut, mCurrent);
     }
-    
+
     String temp = getNext();
     if (!TextUtils.isEmpty(temp)) {
       mCurrent = temp;
@@ -232,7 +240,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     }
   }
 
-  
+
   @Override
   protected void onDestroy() {
     super.onDestroy();
@@ -245,7 +253,7 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       mDictDB.close();
       mDictDB = null;
     }
-    
+
     if (mScan != null) {
       mScan.close();
       mScan = null;
@@ -253,11 +261,12 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     if (mFNewOut != null) {
       try {
         mFNewOut.close();
-      } catch (IOException e) {}
+      } catch (IOException e) {
+      }
       mFNewOut = null;
     }
   }
-  
+
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.menu_pinyin_filter, menu);
@@ -271,13 +280,10 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       mDialog = new ProgressDialog(ResultActivity.this);
       mDialog.setCancelable(false);
       mDialog.show();
-      
+
       new Thread() {
 
         public void run() {
-
-          Utils.saveToAbandonFile(mAbandonList);
-
           final File dir = Utils.getAppDir();
           File temp = new File(dir, "result.txt.temp");
           if (temp.exists()) {
@@ -304,15 +310,17 @@ public class ResultActivity extends Activity implements View.OnClickListener{
 
             temp.renameTo(new File(dir, "result.txt"));
 
-          } catch (Exception e) {} finally {
+          } catch (Exception e) {
+          } finally {
             if (fw != null) {
               try {
                 fw.close();
-              } catch (IOException e) {}
+              } catch (IOException e) {
+              }
               fw = null;
             }
           }
-          
+
           mHandler.sendEmptyMessage(1);
 
         };
@@ -321,8 +329,8 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       return true;
     }
     return super.onOptionsItemSelected(item);
-  }  
-  
+  }
+
   private String getNext() {
     if (mScan != null && mScan.hasNextLine()) {
       while (mScan.hasNextLine()) {
@@ -336,13 +344,14 @@ public class ResultActivity extends Activity implements View.OnClickListener{
         }
 
         Log.e(TAG, "getNext " + ret);
+        mCount++;
         return ret;
       }
     }
 
     return null;
   }
-  
+
   private String getChar(String str, int index) {
     if (!TextUtils.isEmpty(str)) {
       char[] chars = str.toCharArray();
@@ -353,11 +362,11 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     }
     return null;
   }
-  
+
   private String getCharNote(String str) {
-    if(TextUtils.isEmpty(str))
+    if (TextUtils.isEmpty(str))
       return null;
-    
+
     if (mDictDB != null) {
       Cursor c = mDictDB.rawQuery("select jijie from zi where zi = ?", new String[] {str});
       if (c != null) {
@@ -379,26 +388,31 @@ public class ResultActivity extends Activity implements View.OnClickListener{
     }
     return null;
   }
-  
+
   private void updateView() {
-    if (TextUtils.isEmpty(mCurrent)) return;
+    if (TextUtils.isEmpty(mCurrent))
+      return;
 
-    if (mName != null) mName.setText(mCurrent);
+    if (mName != null)
+      mName.setText(mCurrent);
 
+    if (mNum != null)
+      mNum.setText(String.valueOf(mCount));
+    
     String name2 = getChar(mCurrent, 2);
     String name1 = getChar(mCurrent, 1);
-        
+
     if (mNo1 != null) {
       StringBuilder sb = new StringBuilder();
-//      sb.append("No more ");
+      // sb.append("No more ");
       sb.append(name1);
-      mNo1.setText(sb.toString());      
+      mNo1.setText(sb.toString());
     }
-    
+
     if (mInfo1 != null) {
-      mInfo1.setText(getCharNote(name1));      
+      mInfo1.setText(getCharNote(name1));
     }
-    
+
     if (TextUtils.isEmpty(name2)) {
       mNo2.setVisibility(View.GONE);
       mNoBoth.setVisibility(View.GONE);
@@ -407,29 +421,29 @@ public class ResultActivity extends Activity implements View.OnClickListener{
       mNoBoth.setVisibility(View.VISIBLE);
       if (mNo2 != null) {
         StringBuilder sb = new StringBuilder();
-//        sb.append("No more ");
+        // sb.append("No more ");
         sb.append(name2);
         mNo2.setText(sb.toString());
       }
 
       if (mNoBoth != null) {
         StringBuilder sb = new StringBuilder();
-//        sb.append("No more ");
+        // sb.append("No more ");
         sb.append(name1);
         sb.append("&");
         sb.append(name2);
         mNoBoth.setText(sb.toString());
       }
-      
+
       if (mInfo2 != null) {
-        mInfo2.setText(getCharNote(name2));      
+        mInfo2.setText(getCharNote(name2));
       }
     }
   }
-  
+
   private void saveToFile(FileWriter fout, String character) {
     if (fout != null && !TextUtils.isEmpty(character)) {
-      try {        
+      try {
         fout.write(character);
         fout.write('\n');
         fout.flush();
@@ -440,4 +454,3 @@ public class ResultActivity extends Activity implements View.OnClickListener{
 
 
 }
-

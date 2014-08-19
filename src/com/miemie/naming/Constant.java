@@ -13,6 +13,7 @@ public class Constant {
   public final static String PREF_MAX_STROKE = "max_stores_";
   public final static String PREF_TONE = "tone_filter_";
   public final static String PREF_PINYIN = "pinyin_filter_";
+  public final static String PREF_CHARS = "char_filter_";
   
   public final static String PREF_FAMILYNAME = "family_name";
   public final static String PREF_MAX_CHARS = "chars_in_name";

@@ -6,10 +6,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Scanner;
 
@@ -25,14 +25,15 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 
-
 public class Utils {
-  
+
   private final static String TAG = Utils.class.getSimpleName();
-  
+
   private static int parse(char c) {
-    if (c >= 'a') return (c - 'a' + 10) & 0x0f;
-    if (c >= 'A') return (c - 'A' + 10) & 0x0f;
+    if (c >= 'a')
+      return (c - 'a' + 10) & 0x0f;
+    if (c >= 'A')
+      return (c - 'A' + 10) & 0x0f;
     return (c - '0') & 0x0f;
   }
 
@@ -79,12 +80,15 @@ public class Utils {
 
       SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(file, null);
       return database;
-    } catch (Exception e) {} finally {}
+    } catch (Exception e) {
+    } finally {
+    }
 
     return null;
   }
 
   private static final String DICT_DATABASE_FILENAME = "zidian.db";
+
   public static SQLiteDatabase openDictDatabase(Context context) {
     try {
       File file = new File(context.getFilesDir(), DICT_DATABASE_FILENAME);
@@ -106,11 +110,13 @@ public class Utils {
 
       SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(file, null);
       return database;
-    } catch (Exception e) {} finally {}
+    } catch (Exception e) {
+    } finally {
+    }
 
     return null;
   }
-  
+
   public static List<String> query(Context context, int id) {
 
     SharedPreferences pref = context.getSharedPreferences(Constant.PREF_NAME, Context.MODE_PRIVATE);
@@ -126,7 +132,7 @@ public class Utils {
       Cursor c = db.rawQuery("select * from pinyin", null);
 
       if (c != null) {
-        
+
         if (c.getCount() > 0) {
           c.moveToFirst();
           do {
@@ -136,11 +142,8 @@ public class Utils {
         c.close();
       }
 
-    } else { 
-      String[] apinyins = pinyin.split("@");
-      for(String str:apinyins){
-        pinyins.add(str);
-      }
+    } else {
+      pinyins = combineSToSet(pinyin, "@");
     }
 
     StringBuilder query = new StringBuilder("select hanzi, pinyin from characters");
@@ -151,7 +154,8 @@ public class Utils {
       if (minStrokes > 0) {
         query.append("strokes >= ");
         query.append(minStrokes);
-        if (maxStrokes > 0) query.append(" and ");
+        if (maxStrokes > 0)
+          query.append(" and ");
       }
       if (maxStrokes > 0) {
         query.append(" strokes <= ");
@@ -168,50 +172,52 @@ public class Utils {
         first = false;
       }
       if ((tone & Constant.TONE_2) == Constant.TONE_2) {
-        if (!first) query.append(" or ");
+        if (!first)
+          query.append(" or ");
         query.append("tone=2");
         first = false;
       }
       if ((tone & Constant.TONE_3) == Constant.TONE_3) {
-        if (!first) query.append(" or ");
+        if (!first)
+          query.append(" or ");
         query.append("tone=3");
         first = false;
       }
       if ((tone & Constant.TONE_4) == Constant.TONE_4) {
-        if (!first) query.append(" or ");
+        if (!first)
+          query.append(" or ");
         query.append("tone=4");
         first = false;
       }
       query.append(" ) and ");
     }
 
-    query.append("( popular = 1 )");
-    
+    query.append("( popular = 1 ) and ( abandon = 0 )");
+
     Log.d(TAG, query.toString());
 
     Cursor c = db.rawQuery(query.toString(), null);
 
     if (c != null) {
       HashSet<String> chars = new HashSet<String>();
-      Log.e(TAG, ""+c.getCount());
-      if (c.getCount() > 0) {        
+      Log.e(TAG, "" + c.getCount());
+      if (c.getCount() > 0) {
         c.moveToFirst();
         do {
           if (pinyins.contains(c.getString(1)) && !chars.contains(c.getString(0))) {
-            Log.e(TAG, "" + c.getString(1) + " " + c.getString(0));
-            chars.add(c.getString(0));
+              chars.add(c.getString(0));
           }
         } while (c.moveToNext());
       }
       c.close();
-      
+
       ArrayList<String> ret = new ArrayList<String>();
       ret.addAll(chars);
       return ret;
     }
 
     return null;
-  }  
+  }
 
   public static List<String> doParse(InputStream in) {
     List<String> persons = null;
@@ -245,28 +251,33 @@ public class Utils {
         eventType = parser.next();
       }
 
-    } catch (XmlPullParserException e) {} catch (IOException e) {}
+    } catch (XmlPullParserException e) {
+    } catch (IOException e) {
+    }
     return persons;
   }
 
   public static String getStringPrefValue(SharedPreferences pref, String key, int id) {
     StringBuilder sb = new StringBuilder(key);
-    if (id != 0) sb.append(id);
+    if (id != 0)
+      sb.append(id);
 
     return pref.getString(sb.toString(), null);
   }
 
   public static int getIntPrefValue(SharedPreferences pref, String key, int id) {
     StringBuilder sb = new StringBuilder(key);
-    if (id != 0) sb.append(id);
+    if (id != 0)
+      sb.append(id);
     return pref.getInt(sb.toString(), 0);
   }
-  
+
   public static boolean saveStringPrefValue(SharedPreferences pref, String key, String value, int id) {
 
     if (pref != null) {
       StringBuilder sb = new StringBuilder(key);
-      if (id != 0) sb.append(id);
+      if (id != 0)
+        sb.append(id);
       SharedPreferences.Editor editor = pref.edit();
       editor.putString(sb.toString(), value);
       editor.apply();
@@ -279,7 +290,8 @@ public class Utils {
   public static boolean saveIntPrefValue(SharedPreferences pref, String key, int value, int id) {
     if (pref != null) {
       StringBuilder sb = new StringBuilder(key);
-      if (id != 0) sb.append(id);
+      if (id != 0)
+        sb.append(id);
       SharedPreferences.Editor editor = pref.edit();
       editor.putInt(sb.toString(), value);
       editor.apply();
@@ -288,7 +300,7 @@ public class Utils {
 
     return false;
   }
-  
+
   public static File getAppDir() {
     File dir = new File(android.os.Environment.getExternalStorageDirectory(), "Naming");
     if (!dir.exists()) {
@@ -296,7 +308,7 @@ public class Utils {
     }
     return dir;
   }
-  
+
   public static void updateDB(Context context) {
     SQLiteDatabase db = openDatabase(context);
     Scanner scanner = null;
@@ -338,35 +350,82 @@ public class Utils {
       }
     }
   }
-  
-  public static HashSet<String> getAbandonList() {
+
+  /*
+   * public static HashSet<String> getAbandonList() { HashSet<String> set = new HashSet<String>();
+   * 
+   * final File dir = Utils.getAppDir(); File abandon = new File(dir, "abandon.txt"); Scanner scan =
+   * null; try { scan = new Scanner(abandon); if (scan != null) { while (scan.hasNextLine()) {
+   * set.add(scan.nextLine()); } } } catch (FileNotFoundException e) { } finally { if (scan != null)
+   * scan.close(); }
+   * 
+   * return set; }
+   */
+  public static HashSet<String> getAbandonList(Context context) {
     HashSet<String> set = new HashSet<String>();
 
-    final File dir = Utils.getAppDir();
-    File abandon = new File(dir, "abandon.txt");
-    Scanner scan = null;
-    try {
-      scan = new Scanner(abandon);
-      if (scan != null) {
-        while (scan.hasNextLine()) {
-          set.add(scan.nextLine());
-        }
+    SQLiteDatabase db = openDatabase(context);
+
+    Cursor c = db.rawQuery("select hanzi from characters where abandon=1", null);
+
+    if (c != null) {
+      Log.e(TAG, "getAbandonList " + c.getCount());
+      if (c.getCount() > 0) {
+        c.moveToFirst();
+        do {
+          set.add(c.getString(0));
+        } while (c.moveToNext());
       }
-    } catch (FileNotFoundException e) {} finally {
-      if (scan != null) scan.close();
+      c.close();
+
+      db.close();
+      return set;
     }
 
-    return set;
+    return null;
   }
-  
-  public static void saveToAbandonFile(HashSet<String> set) {
-    if(set ==null || set.size() == 0)
+
+  public static void updateAbandonDB(Context context, final SQLiteDatabase db, String character,
+      int value) {
+    if (TextUtils.isEmpty(character))
       return;
-    
+
+    SQLiteDatabase temp = db;
+    if (temp == null) {
+      temp = openDatabase(context);
+    }
+
+    Cursor c =
+        temp.rawQuery("select _id, abandon from characters where hanzi=?", new String[] {character});
+
+    if (c != null) {
+      Log.e(TAG, "updateAbandonDB " + c.getCount());
+
+      if (c.getCount() > 0) {
+        c.moveToFirst();
+        do {
+          int id = c.getInt(0);
+          ContentValues values = new ContentValues();
+          values.put("abandon", value);
+          temp.update("characters", values, "_id=" + String.valueOf(id), null);
+        } while (c.moveToNext());
+      }
+      c.close();
+    }
+
+    if (db == null) {
+      temp.close();
+    }
+  }
+
+  public static void saveToAbandonFile(HashSet<String> set) {
+    if (set == null || set.size() == 0)
+      return;
+
     final File dir = Utils.getAppDir();
     File abandon = new File(dir, "abandon.txt");
     abandon.delete();
-    
+
     FileWriter fw = null;
     try {
       if (!abandon.exists()) {
@@ -384,8 +443,145 @@ public class Utils {
 
     } finally {
       try {
-        if (fw != null) fw.close();
-      } catch (IOException e) {}
+        if (fw != null)
+          fw.close();
+      } catch (IOException e) {
+      }
     }
   }
+
+  public static String allInOne(String[] array, String separator) {
+    StringBuilder sb = new StringBuilder();
+    for (String str : array) {
+      sb.append(str);
+      sb.append(separator);
+    }
+    String ret = sb.toString();
+    
+    if (ret.endsWith(separator)) {
+      ret = ret.substring(0, (ret.length() - 2));
+    }
+    return ret;
+  }
+  
+  public static HashSet<String> combineSToSet(String input, String separator) {
+    if (TextUtils.isEmpty(input) || TextUtils.isEmpty(separator))
+      return null;
+    HashSet<String> ret = new HashSet<String>();
+    String[] strs = input.split(separator);
+    for (String str : strs) {
+      ret.add(str);
+    }
+    return ret;
+  }
+  
+  public static int combineStringSize(String input, String separator) {
+    if (TextUtils.isEmpty(input) || TextUtils.isEmpty(separator))
+      return 0;
+    String[] strs = input.split(separator);
+    return strs != null ? strs.length : 0;
+  }
+  
+  public static boolean isGood(SQLiteDatabase db, String str1, String str2) {
+
+    if (db == null || TextUtils.isEmpty(str1) || TextUtils.isEmpty(str2))
+      return false;
+
+    Cursor c1 = db.rawQuery("select pinyin from characters where hanzi=?", new String[] {str1});
+    Cursor c2 = db.rawQuery("select pinyin from characters where hanzi=?", new String[] {str2});
+    
+    boolean ret = true;
+    
+    if (c1 != null && c2 != null) {
+      if (c1.getCount() == 1 && c2.getCount() == 1) {
+        c1.moveToFirst();
+        c2.moveToFirst();
+        String py1 = c1.getString(0);
+        String py2 = c2.getString(0);
+//        String bs1 = c1.getString(1);
+//        String bs2 = c2.getString(1);
+//        if (!(TextUtils.isEmpty(bs1) || TextUtils.isEmpty(bs2))) {
+//          // 2 char not with same bushou
+//          if (bs1.equals(bs2)) {
+//            ret = false;
+//          }
+//        }
+        
+        if (ret == true) {
+          if (py1.contains(py2) || py1.contains(py2)) {
+            ret = false;
+          } else if (py1.equals(py2)) {
+            ret = false;
+          } else if (py1.charAt(0) == py2.charAt(0)) {
+            ret = false;
+          } else {
+            float value = levenshtein(py1, py2);
+            
+            Log.d(TAG, str1 + ":" + py1 + " " + str2 + ":" + py2 + " " + value);
+            if(value >= 0.5f){
+              ret = false;
+            }
+          }
+        }
+        
+      } else {
+        ret = false;
+      }
+
+    }
+    
+    if (c1 != null) {
+      c1.close();
+    }
+    if (c2 != null) {
+      c2.close();
+    }
+
+    return ret;
+  }
+
+  public static float levenshtein(String str1, String str2) {
+    // 计算两个字符串的长度。
+    int len1 = str1.length();
+    int len2 = str2.length();
+    // 建立上面说的数组，比字符长度大一个空间
+    int[][] dif = new int[len1 + 1][len2 + 1];
+    // 赋初值，步骤B。
+    for (int a = 0; a <= len1; a++) {
+      dif[a][0] = a;
+    }
+    for (int a = 0; a <= len2; a++) {
+      dif[0][a] = a;
+    }
+    // 计算两个字符是否一样，计算左上的值
+    int temp;
+    for (int i = 1; i <= len1; i++) {
+      for (int j = 1; j <= len2; j++) {
+        if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+          temp = 0;
+        } else {
+          temp = 1;
+        }
+        // 取三个值中最小的
+        dif[i][j] = min(dif[i - 1][j - 1] + temp, dif[i][j - 1] + 1, dif[i - 1][j] + 1);
+      }
+    }
+
+    float similarity = 1 - (float) dif[len1][len2] / Math.max(str1.length(), str2.length());
+
+    return similarity;
+  }
+
+  // 得到最小值
+  private static int min(int... is) {
+    int min = Integer.MAX_VALUE;
+    for (int i : is) {
+      if (min > i) {
+        min = i;
+      }
+    }
+    return min;
+  }
+
+
 }

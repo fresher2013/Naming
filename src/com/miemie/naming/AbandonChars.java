@@ -1,9 +1,9 @@
 package com.miemie.naming;
 
 import java.util.HashSet;
-import java.util.logging.MemoryHandler;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -16,15 +16,18 @@ import android.widget.TextView;
 
 public class AbandonChars extends Activity {
 
-  private HashSet<String> mAbandonList = new HashSet<String>();
+  private HashSet<String> mAbandonList = null;
   private EditText mEditText;
   private TextView mText;
-  private Button mAdd,mRemove;
+  private Button mAdd, mRemove;
   private View.OnClickListener mClickListener = new View.OnClickListener() {
 
     @Override
     public void onClick(View v) {
       String txt = null;
+
+      if (mAbandonList == null)
+        return;
 
       if (mEditText != null) {
         txt = mEditText.getEditableText().toString();
@@ -39,7 +42,7 @@ public class AbandonChars extends Activity {
         for (char c : chars) {
           if (!mAbandonList.contains(String.valueOf(c))) {
             mAbandonList.add(String.valueOf(c));
-            updateTxt();            
+            updateTxt();
           }
           mEditText.setText("");
         }
@@ -56,21 +59,19 @@ public class AbandonChars extends Activity {
     }
   };
 
-  Handler mHandler = new Handler(){
+  Handler mHandler = new Handler() {
     public void dispatchMessage(android.os.Message msg) {
-      if(msg.what==1){
+      if (msg.what == 1) {
         mRemove.setEnabled(true);
         mAdd.setEnabled(true);
         updateTxt();
       }
     };
   };
-  
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-
 
     setContentView(R.layout.activity_abandon);
 
@@ -87,7 +88,7 @@ public class AbandonChars extends Activity {
     new Thread() {
 
       public void run() {
-        mAbandonList = Utils.getAbandonList();
+        mAbandonList = Utils.getAbandonList(AbandonChars.this);
         mHandler.sendEmptyMessage(1);
       };
 
@@ -102,7 +103,6 @@ public class AbandonChars extends Activity {
   @Override
   public void finish() {
     super.finish();
-    Utils.saveToAbandonFile(mAbandonList);
   }
 
   @Override
@@ -119,14 +119,21 @@ public class AbandonChars extends Activity {
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     menu.add(0, 1, 0, "Clear all");
+    menu.add(0, 2, 0, "Save to file.");
     return super.onCreateOptionsMenu(menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == 1) {
+      SQLiteDatabase db = Utils.openDatabase(AbandonChars.this);
+      for (String character : mAbandonList) {
+        Utils.updateAbandonDB(AbandonChars.this, db, character, 0);
+      }
+      db.close();
       mAbandonList.clear();
       updateTxt();
+    } else if (item.getItemId() == 2) {
       Utils.saveToAbandonFile(mAbandonList);
     }
     return super.onOptionsItemSelected(item);

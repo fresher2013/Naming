@@ -16,67 +16,63 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-public class PinyinActivity extends Activity implements OnCheckedChangeListener,View.OnClickListener{
+public class PinyinActivity extends Activity implements OnCheckedChangeListener,
+    View.OnClickListener {
 
   private LayoutInflater mFactory;
   private ListView mList;
   private PinyinAdapter mAdapter;
-  
+
   private boolean bNoN = false;
   private boolean bNoR = false;
   private boolean bNoZhChSh = false;
   private boolean bNoBackNasals = false;
   private boolean bNoClosedMouth = false;
-  
-    
+
   private HashSet<String> mUserSelectedPinyins = new HashSet<String>();
-  
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    
+
     setContentView(R.layout.activity_pinyin);
-    
+
     mFactory = LayoutInflater.from(this);
-        
+
     mAdapter = new PinyinAdapter(this);
-    
+
     mList = (ListView) findViewById(R.id.pinyin_list);
     mList.setAdapter(mAdapter);
     mList.setFastScrollEnabled(true);
-    
+
     Intent it = getIntent();
     if (it != null) {
       String temp = it.getStringExtra("pinyin");
-      if (!TextUtils.isEmpty(temp)) {
-        String[] strs = temp.split("@");
-        for (String str : strs) {
-          mUserSelectedPinyins.add(str);
-        }
-      }
-    }    
-    
+      HashSet<String> set = Utils.combineSToSet(temp, "@");
+      if (set != null)
+        mUserSelectedPinyins = set;
+    }
+
     ActionBar actionBar = getActionBar();
     if (actionBar != null) {
-        actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
+      actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
     }
-    
+
     Button filter = (Button) findViewById(R.id.filter);
     filter.setOnClickListener(new View.OnClickListener() {
 
@@ -85,7 +81,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
         showDialog(1);
       }
     });
-    
+
     Button all = (Button) findViewById(R.id.all);
     all.setOnClickListener(new View.OnClickListener() {
 
@@ -93,11 +89,9 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       public void onClick(View v) {
         mAdapter.selectAll();
       }
-    });    
+    });
   }
 
-  
-  
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.menu_pinyin_filter, menu);
@@ -110,17 +104,8 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       int size = mUserSelectedPinyins.size();
       if (size > 0) {
         String[] selected = mUserSelectedPinyins.toArray(new String[size]);
-        StringBuilder sb = new StringBuilder();
-        for (String pinyin : selected) {
-          sb.append(pinyin);
-          sb.append("@");
-        }
         Intent it = new Intent();
-        String ret = sb.toString();
-        if(ret.endsWith("@")){
-          ret = ret.substring(0, (ret.length()-2));
-        }
-        it.putExtra("pinyin", ret);
+        it.putExtra("pinyin", Utils.allInOne(selected, "@"));
         it.putExtra("size", size);
         setResult(RESULT_OK, it);
         PinyinActivity.this.finish();
@@ -145,7 +130,6 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     }
     super.onPrepareDialog(id, dialog, args);
   }
-
 
   @Override
   @Deprecated
@@ -203,7 +187,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       });
 
       builder.setPositiveButton(android.R.string.ok, new OnClickListener() {
-        public void onClick(DialogInterface dialog, int which) {          
+        public void onClick(DialogInterface dialog, int which) {
           mAdapter.refreshDataSet();
         }
       });
@@ -216,14 +200,14 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
   private class PinyinAdapter extends BaseAdapter implements SectionIndexer {
     private ArrayList<String> mDisplayedPinyins = new ArrayList<String>();
     private final String[] mAllPinyins;
-    private Object [] mSectionHeaders;
-    private Object [] mSectionPositions;
+    private Object[] mSectionHeaders;
+    private Object[] mSectionPositions;
     private String[] mSelectedPinyins;
-    
+
     private int mSelectedEndPosition = 0;
-    
+
     private final String mSelectedPinyinsHeaderString;
-    
+
     public PinyinAdapter(Context context) {
       super();
 
@@ -246,7 +230,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       } else {
         mAllPinyins = null;
       }
-      
+
       db.close();
       refreshDataSet();
     }
@@ -258,10 +242,10 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
 
     @Override
     public Object getItem(int p) {
-      if (mDisplayedPinyins != null && p >=0 && p < mDisplayedPinyins.size()) {
+      if (mDisplayedPinyins != null && p >= 0 && p < mDisplayedPinyins.size()) {
         return mDisplayedPinyins.get(p);
-    }
-    return null;
+      }
+      return null;
     }
 
     @Override
@@ -273,8 +257,8 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       TextView pinyin;
       CheckBox selected;
       ImageView remove;
-  }
-    
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
       if (mDisplayedPinyins == null || position < 0 || position >= mDisplayedPinyins.size()) {
@@ -337,21 +321,30 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
 
       return view;
     }
-    
+
     public void selectAll() {
       mUserSelectedPinyins.clear();
       for (String pinyin : mAllPinyins) {
-        if (!filter(pinyin)) mUserSelectedPinyins.add(pinyin);
+        if (!filter(pinyin))
+          mUserSelectedPinyins.add(pinyin);
       }
       refreshDataSet();
     }
-    
+
     public void refreshDataSet() {
 
       mDisplayedPinyins.clear();
-      
-//      mSelectedPinyins = mUserSelectedPinyins.toArray(new String[mUserSelectedPinyins.size()]);
-//      Arrays.sort(mSelectedPinyins);
+
+      mSelectedPinyins = mUserSelectedPinyins.toArray(new String[mUserSelectedPinyins.size()]);
+      // Arrays.sort(mSelectedPinyins);
+
+      if (mSelectedPinyins != null && mSelectedPinyins.length > 0) {
+        for (String str : mSelectedPinyins) {
+          if (filter(str)) {
+            mUserSelectedPinyins.remove(str);
+          }
+        }
+      }
 
       ArrayList<String> sections = new ArrayList<String>();
       ArrayList<Integer> positions = new ArrayList<Integer>();
@@ -359,28 +352,28 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       String val = null;
       int count = 0;
 
-      if (mSelectedPinyins!=null && mSelectedPinyins.length > 0) {
-        sections.add("*");
-        positions.add(count);
-        mDisplayedPinyins.add(mSelectedPinyinsHeaderString);
-        count++;
-        for (String str : mSelectedPinyins) {
-          if(filter(str)){
-            mUserSelectedPinyins.remove(str);
-            continue;
-          }
-          mDisplayedPinyins.add(str);
-          count++;
-        }
-        mSelectedEndPosition = count;
-      }
+      // if (mSelectedPinyins != null && mSelectedPinyins.length > 0) {
+      // sections.add("*");
+      // positions.add(count);
+      // mDisplayedPinyins.add(mSelectedPinyinsHeaderString);
+      // count++;
+      // for (String str : mSelectedPinyins) {
+      // if (filter(str)) {
+      // mUserSelectedPinyins.remove(str);
+      // continue;
+      // }
+      // mDisplayedPinyins.add(str);
+      // count++;
+      // }
+      // mSelectedEndPosition = count;
+      // }
 
       for (String pinyin : mAllPinyins) {
         if (filter(pinyin)) {
-//          Log.e("TEST", "refreshDataSet "+pinyin);
+          // Log.e("TEST", "refreshDataSet "+pinyin);
           continue;
         }
-        
+
         if (!pinyin.substring(0, 1).equals(val)) {
           val = pinyin.substring(0, 1);
           sections.add((new String(val)).toUpperCase());
@@ -396,11 +389,10 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
 
       mSectionHeaders = sections.toArray();
       mSectionPositions = positions.toArray();
-      
+
       notifyDataSetChanged();
     }
 
-    
     @Override
     public Object[] getSections() {
       return mSectionHeaders;
@@ -408,7 +400,11 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
 
     @Override
     public int getPositionForSection(int sectionIndex) {
-      return (mSectionPositions != null) ? (Integer) mSectionPositions[sectionIndex] : 0;
+      if (mSectionPositions != null) {
+        if (sectionIndex < mSectionPositions.length)
+          return (Integer) mSectionPositions[sectionIndex];
+      }
+      return 0;
     }
 
     @Override
@@ -425,7 +421,7 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
       }
       return 0;
     }
-    
+
   }
 
   @Override
@@ -449,9 +445,10 @@ public class PinyinActivity extends Activity implements OnCheckedChangeListener,
     b.setChecked(!checked);
     mAdapter.refreshDataSet();
   }
-  
+
   private boolean filter(String pinyin) {
-    if (TextUtils.isEmpty(pinyin)) return false;
+    if (TextUtils.isEmpty(pinyin))
+      return false;
 
     String temp = pinyin.toLowerCase();
     if (bNoBackNasals) {

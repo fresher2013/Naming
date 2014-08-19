@@ -16,7 +16,11 @@ public class Naming extends Application{
       public void run() {
         SQLiteDatabase db = Utils.openDictDatabase(Naming.this);
         db.close();
-        db = Utils.openDatabase(Naming.this);
+      };
+    }.start();
+    new Thread() {
+      public void run() {
+        SQLiteDatabase db = Utils.openDatabase(Naming.this);
         db.close();
       };
     }.start();

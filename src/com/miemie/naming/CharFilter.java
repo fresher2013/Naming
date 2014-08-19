@@ -1,10 +1,15 @@
 package com.miemie.naming;
 
+import java.util.List;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,7 +22,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-public class CharFilter extends Activity implements OnCheckedChangeListener{
+public class CharFilter extends Activity implements OnCheckedChangeListener {
 
   private TextView mMaxHeader;
   private TextView mMinHeader;
@@ -30,9 +35,26 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
   private int mTone;
   private String mPinyin;
   private int mPinyinSize;
-  
-  private SharedPreferences mPref;  
-    
+
+  private SharedPreferences mPref;
+
+  ProgressDialog mDialog;
+
+  private Handler mHandler = new Handler() {
+
+    @Override
+    public void handleMessage(Message msg) {
+      super.handleMessage(msg);
+      if (msg.what == 1) {
+        Intent it = new Intent();
+        it.putExtra("id", mID);
+        setResult(RESULT_OK, it);
+        CharFilter.this.finish();
+      }
+    }
+
+  };
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -48,75 +70,80 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
     mTone = Utils.getIntPrefValue(mPref, Constant.PREF_TONE, mID);
     mPinyin = Utils.getStringPrefValue(mPref, Constant.PREF_PINYIN, mID);
     if (!TextUtils.isEmpty(mPinyin)) {
-      String[] strs = mPinyin.split("@");
-      mPinyinSize = (strs != null ? strs.length : 0);
+      mPinyinSize = Utils.combineStringSize(mPinyin, "@");
     }
 
     mMaxHeader = (TextView) findViewById(R.id.max_header);
     mMinHeader = (TextView) findViewById(R.id.min_header);
-    
+
     mMaxStroke = (SeekBar) findViewById(R.id.max_stroke);
     int max = Utils.getIntPrefValue(mPref, Constant.PREF_MAX_STROKE, mID);
-    mMinStroke = (SeekBar) findViewById(R.id.min_stroke);    
+    mMinStroke = (SeekBar) findViewById(R.id.min_stroke);
     int min = Utils.getIntPrefValue(mPref, Constant.PREF_MIN_STROKE, mID);
-    
+
     mMaxStroke.setMax(30);
     mMaxStroke.setProgress(max);
-    mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":").append(max).toString());
-    mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":").append(min).toString());
-    
+    mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":")
+        .append(max).toString());
+    mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":")
+        .append(min).toString());
+
     mMinStroke.setMax(20);
     mMinStroke.setProgress(min);
-    
+
     mMaxStroke.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-      
+
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
         if (seekBar.getProgress() < mMinStroke.getProgress()) {
           seekBar.setProgress(mMinStroke.getProgress());
         }
-        mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":").append(seekBar.getProgress()).toString());
+        mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":")
+            .append(seekBar.getProgress()).toString());
       }
-      
+
       @Override
       public void onStartTrackingTouch(SeekBar seekBar) {
         // TODO Auto-generated method stub
-        
+
       }
-      
+
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         // TODO Auto-generated method stub
-        mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":").append(progress).toString());
+        mMaxHeader.setText(new StringBuilder(getString(R.string.MaxStrokeInCharacter)).append(":")
+            .append(progress).toString());
       }
     });
 
     mMinStroke.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-      
+
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
         if (seekBar.getProgress() > mMaxStroke.getProgress()) {
           mMaxStroke.setProgress(seekBar.getProgress());
         }
-        mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":").append(seekBar.getProgress()).toString());
+        mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":")
+            .append(seekBar.getProgress()).toString());
       }
-      
+
       @Override
       public void onStartTrackingTouch(SeekBar seekBar) {
         // TODO Auto-generated method stub
-        
+
       }
-      
+
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":").append(progress).toString());
+        mMinHeader.setText(new StringBuilder(getString(R.string.MinStrokeInCharacter)).append(":")
+            .append(progress).toString());
       }
     });
-        
-    
+
+
     mInfo = (TextView) findViewById(R.id.text2);
     mInfo.setText(buildInfoString(mPinyinSize));
-    
+
     RelativeLayout rl = (RelativeLayout) findViewById(R.id.pinyin_filter);
     rl.setOnClickListener(new View.OnClickListener() {
 
@@ -152,6 +179,15 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
   }
 
   @Override
+  protected void onPause() {
+    super.onPause();
+    if (mDialog != null) {
+      mDialog.dismiss();
+      mDialog = null;
+    }
+  }
+
+  @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
     if (resultCode == RESULT_OK) {
@@ -161,7 +197,7 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
         mInfo.setText(buildInfoString(mPinyinSize));
       }
     }
-    
+
     super.onActivityResult(requestCode, resultCode, data);
   }
 
@@ -201,24 +237,35 @@ public class CharFilter extends Activity implements OnCheckedChangeListener{
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.menu_item_ok) {
-      int strokes = mMaxStroke.getProgress();
-      Utils.saveIntPrefValue(mPref, Constant.PREF_MAX_STROKE, strokes, mID);
-      
-      strokes = mMinStroke.getProgress();    
-      Utils.saveIntPrefValue(mPref, Constant.PREF_MIN_STROKE, strokes, mID);
-      Utils.saveIntPrefValue(mPref, Constant.PREF_TONE, mTone, mID);
-      Utils.saveStringPrefValue(mPref, Constant.PREF_PINYIN, mPinyin, mID);
-      
-      Intent it = new Intent();
-      it.putExtra("id", mID);
-      setResult(RESULT_OK, it);
-      CharFilter.this.finish();
+
+      mDialog = new ProgressDialog(CharFilter.this);
+      mDialog.setCancelable(false);
+      mDialog.show();
+
+      new Thread() {
+        public void run() {
+          int max = mMaxStroke.getProgress();
+          Utils.saveIntPrefValue(mPref, Constant.PREF_MAX_STROKE, max, mID);
+
+          int min = mMinStroke.getProgress();
+          Utils.saveIntPrefValue(mPref, Constant.PREF_MIN_STROKE, min, mID);
+          Utils.saveIntPrefValue(mPref, Constant.PREF_TONE, mTone, mID);
+          Utils.saveStringPrefValue(mPref, Constant.PREF_PINYIN, mPinyin, mID);
+
+          List<String> result = Utils.query(CharFilter.this, mID);
+          String resultString = Utils.allInOne(result.toArray(new String[result.size()]), "@");
+          Utils.saveStringPrefValue(mPref, Constant.PREF_CHARS, resultString, mID);
+
+          mHandler.sendEmptyMessage(1);
+        };
+      }.start();
+
       return true;
     }
     return super.onOptionsItemSelected(item);
   }
-  
-  private String buildInfoString(int size){
+
+  private String buildInfoString(int size) {
     StringBuilder sb = new StringBuilder();
     sb.append("Select ");
     sb.append(size);
