@@ -7,73 +7,79 @@
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="19" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
+        android:name="com.miemie.naming.Naming"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" android:name="com.miemie.naming.Naming">
+        android:label="@string/app_name" >
         <activity
             android:name="com.miemie.naming.MainActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-                
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.miemie.naming.CharFilter"
-            android:windowSoftInputMode="stateHidden"
-            android:label="@string/CharacterFilter" >
+            android:label="@string/CharacterFilter"
+            android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-<!--  
-                <category android:name="android.intent.category.LAUNCHER" />
--->
+<!--                 <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
-        </activity>        
-        
+        </activity>
         <activity
             android:name="com.miemie.naming.PinyinActivity"
             android:label="@string/CharacterFilter" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-<!--  
-                <category android:name="android.intent.category.LAUNCHER" />
--->  
+<!--                 <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
-        </activity>   
-
+        </activity>
         <activity
             android:name="com.miemie.naming.ResultActivity"
             android:label="@string/CharacterFilter" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-  
-<!--  
-                <category android:name="android.intent.category.LAUNCHER" />
--->  
-  
+
+<!--                 <category android:name="android.intent.category.LAUNCHER" /> -->
+
             </intent-filter>
         </activity>
-        
         <activity
-            android:name="com.miemie.naming.AbandonChars">
+            android:name="com.miemie.naming.ResultActivity2"
+            android:label="ResultActivity2"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-  
-<!--  
+
                 <category android:name="android.intent.category.LAUNCHER" />
--->  
-  
             </intent-filter>
-        </activity>            
-        
+        </activity>
+        <activity android:name="com.miemie.naming.AbandonChars" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+<!--                 <category android:name="android.intent.category.LAUNCHER" /> -->
+
+            </intent-filter>
+        </activity>
+        <activity android:name="com.miemie.naming.CharReview" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+<!--                 <category android:name="android.intent.category.LAUNCHER" /> -->
+
+            </intent-filter>
+        </activity>
+
         <provider
             android:name=".NamingProvider"
             android:authorities="com.miemie.naming" />

@@ -1,120 +1,120 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/transparent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin" >
+<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
+    a:layout_width="match_parent"
+    a:layout_height="match_parent"
+    a:background="@color/transparent"
+    a:orientation="vertical"
+    a:paddingBottom="@dimen/activity_vertical_margin"
+    a:paddingLeft="@dimen/activity_horizontal_margin"
+    a:paddingRight="@dimen/activity_horizontal_margin"
+    a:paddingTop="@dimen/activity_vertical_margin" >
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="36sp" >
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content"
+        a:minHeight="36sp" >
         <TextView
-            android:id="@+id/number"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            a:id="@+id/number"
+            a:layout_alignParentLeft="true"
+            a:layout_alignParentTop="true"
+            a:layout_width="wrap_content"
+            a:layout_height="wrap_content"/>
         
         
         <TextView
-            android:id="@+id/name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:textSize="32sp" />
+            a:id="@+id/name"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_centerInParent="true"
+            a:gravity="center"
+            a:textSize="32sp" />
 
         <ImageButton
-            android:id="@+id/speak"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_alignParentRight="true"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_speaker" />
+            a:id="@+id/speak"
+            a:layout_width="64dp"
+            a:layout_height="64dp"
+            a:layout_alignParentRight="true"
+            a:paddingRight="@dimen/activity_horizontal_margin"
+            a:paddingTop="@dimen/activity_vertical_margin"
+            a:scaleType="fitCenter"
+            a:src="@drawable/ic_speaker" />
     </RelativeLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:orientation="vertical" >
+        a:layout_width="match_parent"
+        a:layout_height="0dip"
+        a:layout_weight="1"
+        a:orientation="vertical" >
 
         <TextView
-            android:id="@+id/char1"
-            android:layout_width="fill_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:scrollbars="vertical"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            a:id="@+id/char1"
+            a:layout_width="fill_parent"
+            a:layout_height="0dip"
+            a:layout_weight="1"
+            a:gravity="center_vertical"
+            a:scrollbars="vertical"
+            a:textAppearance="?android:attr/textAppearanceSmall" />
 
         <View
-            android:layout_width="match_parent"
-            android:layout_height="1dip"
-            android:background="#28ffffff" />
+            a:layout_width="match_parent"
+            a:layout_height="1dip"
+            a:background="#28ffffff" />
 
         <TextView
-            android:id="@+id/char2"
-            android:layout_width="fill_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:scrollbars="vertical"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            a:id="@+id/char2"
+            a:layout_width="fill_parent"
+            a:layout_height="0dip"
+            a:layout_weight="1"
+            a:gravity="center_vertical"
+            a:scrollbars="vertical"
+            a:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        a:layout_width="fill_parent"
+        a:layout_height="wrap_content"
+        a:orientation="horizontal" >
 
         <Button
-            android:id="@+id/nomorechar1"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center" />
+            a:id="@+id/nomorechar1"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:gravity="center" />
 
         <Button
-            android:id="@+id/nomorechar2"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center" />
+            a:id="@+id/nomorechar2"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:gravity="center" />
 
         <Button
-            android:id="@+id/nomore2char"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            a:id="@+id/nomore2char"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1" />
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        a:layout_width="fill_parent"
+        a:layout_height="wrap_content"
+        a:orientation="horizontal" >
 
         <Button
-            android:id="@+id/yes"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="LIKE" />
+            a:id="@+id/yes"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:gravity="center"
+            a:text="LIKE" />
 
         <Button
-            android:id="@+id/no"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="PASS" />
+            a:id="@+id/no"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:gravity="center"
+            a:text="PASS" />
     </LinearLayout>
 
 </LinearLayout>

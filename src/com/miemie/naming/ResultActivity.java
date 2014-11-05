@@ -128,7 +128,6 @@ public class ResultActivity extends Activity implements View.OnClickListener {
       return;
     }
 
-
     File output = new File(dir, "new_" + input.getName());
     if (output.exists()) {
       output.delete();
@@ -333,6 +332,8 @@ public class ResultActivity extends Activity implements View.OnClickListener {
 
   private String getNext() {
     if (mScan != null && mScan.hasNextLine()) {
+      StringBuilder sb = new StringBuilder();
+      int count = 0;
       while (mScan.hasNextLine()) {
         String ret = mScan.nextLine();
         String name2 = getChar(ret, 2);
@@ -343,9 +344,14 @@ public class ResultActivity extends Activity implements View.OnClickListener {
           continue;
         }
 
+        sb.append(ret);        
+        count++;
         Log.e(TAG, "getNext " + ret);
-        mCount++;
-        return ret;
+        if (count >= 2) {
+          mCount++;
+          return sb.toString();
+        }
+        sb.append("\n");
       }
     }
 

@@ -1,106 +1,132 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin" >
+    a:layout_width="match_parent"
+    a:layout_height="match_parent"
+    a:orientation="vertical"
+    a:paddingBottom="@dimen/activity_vertical_margin"
+    a:paddingLeft="@dimen/activity_horizontal_margin"
+    a:paddingRight="@dimen/activity_horizontal_margin"
+    a:paddingTop="@dimen/activity_vertical_margin" >
 
     <ScrollView
-        android:id="@+id/scrollView1"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1" >
+        a:id="@+id/scrollView1"
+        a:layout_width="match_parent"
+        a:layout_height="0dip"
+        a:layout_weight="1" >
 
         <LinearLayout
-            android:id="@+id/content"
-            android:layout_width="match_parent"
-            android:layout_height="0dip"
-            android:orientation="vertical" >
+            a:id="@+id/content"
+            a:layout_width="match_parent"
+            a:layout_height="0dip"
+            a:orientation="vertical" >
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/FamilyName" />
+                a:layout_width="match_parent"
+                a:layout_height="wrap_content"
+                a:text="@string/FamilyName" />
 
             <EditText
-                android:id="@+id/family_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:inputType="text"
-                android:singleLine="true" />
+                a:id="@+id/family_name"
+                a:layout_width="match_parent"
+                a:layout_height="wrap_content"
+                a:clickable="false"
+                a:inputType="text"
+                a:singleLine="true" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/MaxCharacterInName" />
+                a:layout_width="wrap_content"
+                a:layout_height="wrap_content"
+                a:text="@string/MaxCharacterInName" />
 
             <Spinner
-                android:id="@+id/character_no"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:entries="@array/CharacterNo"
-                android:spinnerMode="dropdown"
-                tools:listitem="@android:layout/simple_spinner_dropdown_item" />
+                a:id="@+id/character_no"
+                a:layout_width="match_parent"
+                a:layout_height="wrap_content"
+                a:entries="@array/CharacterNo"
+                a:spinnerMode="dropdown"
+                tools:listitem="@a:layout/simple_spinner_dropdown_item" />
 
             <RelativeLayout
-                android:id="@+id/name_filter1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                a:id="@+id/name_filter1"
+                a:layout_width="match_parent"
+                a:layout_height="wrap_content" >
 
                 <TextView
-                    android:id="@+id/text11"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/CharacterFilter1"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    a:id="@+id/text11"
+                    a:layout_width="match_parent"
+                    a:layout_height="wrap_content"
+                    a:text="@string/CharacterFilter1"
+                    a:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
-                    android:id="@+id/text12"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/text11"
-                    android:paddingLeft="@dimen/activity_horizontal_margin" />
+                    a:id="@+id/text12"
+                    a:layout_width="match_parent"
+                    a:layout_height="wrap_content"
+                    a:layout_below="@id/text11"
+                    a:paddingLeft="@dimen/activity_horizontal_margin" />
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/name_filter2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" >
+                a:id="@+id/name_filter2"
+                a:layout_width="match_parent"
+                a:layout_height="wrap_content"
+                a:visibility="gone" >
 
                 <TextView
-                    android:id="@+id/text21"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/CharacterFilter2"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    a:id="@+id/text21"
+                    a:layout_width="match_parent"
+                    a:layout_height="wrap_content"
+                    a:text="@string/CharacterFilter2"
+                    a:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
-                    android:id="@+id/text22"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/text21"
-                    android:paddingLeft="@dimen/activity_horizontal_margin" />
+                    a:id="@+id/text22"
+                    a:layout_width="match_parent"
+                    a:layout_height="wrap_content"
+                    a:layout_below="@id/text21"
+                    a:paddingLeft="@dimen/activity_horizontal_margin" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>
 
     <View
-        android:layout_width="match_parent"
-        android:layout_height="1dip"
-        android:background="#28ffffff" />
+        a:layout_width="match_parent"
+        a:layout_height="1dip"
+        a:background="#28ffffff" />
 
     <Button
-        android:id="@+id/submit"
+        a:id="@+id/review1"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:layout_gravity="center_horizontal"
+        a:background="@drawable/item_background"
+        a:text="Review 1st character list" />
+
+    <View
+        a:layout_width="match_parent"
+        a:layout_height="1dip"
+        a:background="#28ffffff" />
+
+    <Button
+        a:id="@+id/review2"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:layout_gravity="center_horizontal"
+        a:background="@drawable/item_background"
+        a:text="Review 2nd character list" />
+
+    <View
+        a:layout_width="match_parent"
+        a:layout_height="1dip"
+        a:background="#28ffffff" />
+
+    <Button
+        a:id="@+id/submit"
         style="@style/bold_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/item_background"
-        android:text="@string/Submit" />
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:layout_gravity="center_horizontal"
+        a:background="@drawable/item_background"
+        a:text="@string/Submit" />
 
 </LinearLayout>

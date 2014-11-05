@@ -14,35 +14,35 @@
      limitations under the License.
 -->
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    xmlns:a="http://schemas.android.com/apk/res/android"
+    a:layout_width="match_parent"
+    a:gravity="center_vertical"
+    a:background="?android:attr/selectableItemBackground"
+    a:layout_height="wrap_content"
+    a:orientation="horizontal">
     <CheckBox
-        android:id="@+id/pinyin_onoff"
-        android:clickable="false"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content" />
+        a:id="@+id/pinyin_onoff"
+        a:clickable="false"
+        a:layout_height="wrap_content"
+        a:layout_width="wrap_content" />
 
     <TextView
-        android:id="@+id/pinyin"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white"
-        android:paddingStart="16dip"
-        android:paddingEnd="10dip"
-        android:layout_height="wrap_content"
-        android:layout_width="0dip"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:singleLine="true" />
+        a:id="@+id/pinyin"
+        a:textAppearance="?android:attr/textAppearanceLarge"
+        a:textColor="@android:color/white"
+        a:paddingLeft="16dip"
+        a:paddingRight="10dip"
+        a:layout_height="wrap_content"
+        a:layout_width="0dip"
+        a:layout_weight="1"
+        a:ellipsize="end"
+        a:singleLine="true" />
 
     <ImageView
-        android:id="@+id/pinyin_remove"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:layout_marginRight="4dip"
-        android:gravity="center_vertical"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content" />
+        a:id="@+id/pinyin_remove"
+        a:src="@android:drawable/ic_menu_close_clear_cancel"
+        a:layout_marginRight="4dip"
+        a:gravity="center_vertical"
+        a:layout_height="wrap_content"
+        a:layout_width="wrap_content" />
 </LinearLayout>

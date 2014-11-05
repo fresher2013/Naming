@@ -1,105 +1,106 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin" >
+<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
+    a:layout_width="fill_parent"
+    a:layout_height="fill_parent"
+    a:orientation="vertical"
+    a:paddingBottom="@dimen/activity_vertical_margin"
+    a:paddingLeft="@dimen/activity_horizontal_margin"
+    a:paddingRight="@dimen/activity_horizontal_margin"
+    a:paddingTop="@dimen/activity_vertical_margin" >
 
     <TextView
-        android:id="@+id/min_header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/MinStrokeInCharacter" />
+        a:id="@+id/min_header"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/MinStrokeInCharacter" />
 
     <SeekBar
-        android:id="@+id/min_stroke"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        a:id="@+id/min_stroke"
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/max_header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/MaxStrokeInCharacter" />
+        a:id="@+id/max_header"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/MaxStrokeInCharacter" />
 
     <SeekBar
-        android:id="@+id/max_stroke"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        a:id="@+id/max_stroke"
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content" />
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/CharacterTone"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content"
+        a:text="@string/CharacterTone"
+        a:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
-        android:paddingTop="@dimen/activity_vertical_margin" 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content"
+        a:orientation="horizontal"
+        a:paddingTop="@dimen/activity_vertical_margin" >
 
         <CheckBox
-            android:id="@+id/tone1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:checked="true"
-            android:text="@string/Tone1" />
+            a:id="@+id/tone1"
+            a:layout_width="match_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:checked="true"
+            a:text="@string/Tone1" />
 
         <CheckBox
-            android:id="@+id/tone2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:checked="true"
-            android:text="@string/Tone2" />
+            a:id="@+id/tone2"
+            a:layout_width="match_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:checked="true"
+            a:text="@string/Tone2" />
     </LinearLayout>
 
     <LinearLayout
-        android:paddingTop="@dimen/activity_vertical_margin" 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content"
+        a:orientation="horizontal"
+        a:paddingTop="@dimen/activity_vertical_margin" >
 
         <CheckBox
-            android:id="@+id/tone3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:checked="true"
-            android:text="@string/Tone3" />
+            a:id="@+id/tone3"
+            a:layout_width="match_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:checked="true"
+            a:text="@string/Tone3" />
 
         <CheckBox
-            android:id="@+id/tone4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:checked="true"
-            android:text="@string/Tone4" />
+            a:id="@+id/tone4"
+            a:layout_width="match_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:checked="true"
+            a:text="@string/Tone4" />
     </LinearLayout>
 
     <RelativeLayout
-        android:paddingTop="@dimen/activity_vertical_margin" 
-        android:id="@+id/pinyin_filter"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        a:id="@+id/pinyin_filter"
+        a:layout_width="match_parent"
+        a:layout_height="wrap_content"
+        a:paddingTop="@dimen/activity_vertical_margin" >
 
         <TextView
-            android:id="@+id/text1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/PreferPinyin"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            a:id="@+id/text1"
+            a:layout_width="match_parent"
+            a:layout_height="wrap_content"
+            a:text="@string/PreferPinyin"
+            a:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
-            android:id="@+id/text2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/text1"
-            android:paddingLeft="@dimen/activity_horizontal_margin" />
+            a:id="@+id/text2"
+            a:layout_width="match_parent"
+            a:layout_height="wrap_content"
+            a:layout_below="@id/text1"
+            a:paddingLeft="@dimen/activity_horizontal_margin"
+            a:paddingRight="@dimen/activity_horizontal_margin" />
     </RelativeLayout>
 
 </LinearLayout>

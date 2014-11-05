@@ -1,36 +1,36 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+<LinearLayout xmlns:a="http://schemas.android.com/apk/res/android"
+    a:layout_width="fill_parent"
+    a:layout_height="fill_parent"
+    a:orientation="vertical" >
 
     <CheckBox
-        android:id="@+id/checkBox1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/WithoutR" />
+        a:id="@+id/checkBox1"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/WithoutR" />
 
     <CheckBox
-        android:id="@+id/checkBox2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/WithoutN" />
+        a:id="@+id/checkBox2"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/WithoutN" />
 
     <CheckBox
-        android:id="@+id/checkBox3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/WithoutZHCHSH" />
+        a:id="@+id/checkBox3"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/WithoutZHCHSH" />
 
     <CheckBox
-        android:id="@+id/checkBox4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/WithoutBackNasals" />
+        a:id="@+id/checkBox4"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/WithoutBackNasals" />
 
     <CheckBox
-        android:id="@+id/checkBox5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/WithoutClosedMouth" />
+        a:id="@+id/checkBox5"
+        a:layout_width="wrap_content"
+        a:layout_height="wrap_content"
+        a:text="@string/WithoutClosedMouth" />
 
 </LinearLayout>

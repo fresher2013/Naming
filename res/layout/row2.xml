@@ -1,0 +1,30 @@
+<TableRow xmlns:a="http://schemas.android.com/apk/res/android"
+    a:layout_height="match_parent"
+    a:layout_margin="1dip"
+    a:background="#000000" >
+
+    <TextView
+        a:id="@+id/tv_1"
+        a:layout_width="match_parent"
+        a:layout_height="match_parent"
+        a:layout_margin="1dip"
+        a:layout_weight="1"
+        a:background="@android:color/background_light"
+        a:gravity="center"
+        a:padding="2dip"
+        a:text="一二三"
+        a:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        a:id="@+id/tv_2"
+        a:layout_width="match_parent"
+        a:layout_height="match_parent"
+        a:layout_margin="1dip"
+        a:layout_weight="1"
+        a:background="@android:color/background_light"
+        a:gravity="center"
+        a:padding="2dip"
+        a:text="三二一"
+        a:textAppearance="?android:attr/textAppearanceLarge" />
+
+</TableRow>
