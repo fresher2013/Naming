@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Intent it = new Intent(MainActivity.this, CharReview.class);
+                Intent it = new Intent(MainActivity.this, CharReview2.class);
                 it.putExtra("id", 1);
                 MainActivity.this.startActivityForResult(it, 1);
             }
@@ -133,7 +133,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Intent it = new Intent(MainActivity.this, CharReview.class);
+                Intent it = new Intent(MainActivity.this, CharReview2.class);
                 it.putExtra("id", 2);
                 MainActivity.this.startActivityForResult(it, 1);
             }
@@ -305,12 +305,11 @@ public class MainActivity extends Activity {
                 if (id == 1) {
                     String temp = Utils.getStringPrefValue(mPref, Constant.PREF_CHARS, 1);
                     mResult1 = Utils.combineSToSet(temp, "@");
-
-                    mInfo1.setText(buildInfoString(mResult1.size()));
+                    mInfo1.setText(buildInfoString(mResult1 != null ? mResult1.size() : 0));
                 } else if (id == 2) {
                     String temp = Utils.getStringPrefValue(mPref, Constant.PREF_CHARS, 2);
                     mResult2 = Utils.combineSToSet(temp, "@");
-                    mInfo2.setText(buildInfoString(mResult2.size()));
+                    mInfo2.setText(buildInfoString(mResult2 != null ? mResult2.size() : 0));
                 }
             }
         }

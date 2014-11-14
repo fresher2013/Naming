@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -115,8 +116,152 @@ public class Utils {
 
         return null;
     }
+    
+    private static final String NAME_DATABASE_FILENAME = "name.db";
+
+    public static SQLiteDatabase openNameDatabase(Context context) {
+        try {
+            File file = new File(context.getFilesDir(), NAME_DATABASE_FILENAME);
+
+            if (!file.exists()) {
+                file.createNewFile();
+                InputStream is = context.getResources().openRawResource(R.raw.name);
+                FileOutputStream fos = new FileOutputStream(file);
+
+                byte[] buffer = new byte[8192];
+                int count = 0;
+
+                while ((count = is.read(buffer)) > 0) {
+                    fos.write(buffer, 0, count);
+                }
+                fos.close();
+                is.close();
+            }
+
+            SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(file, null);
+            return database;
+        } catch (Exception e) {
+        } finally {
+        }
+
+        return null;
+    }
 
     public static List<String> query(Context context, int id) {
+
+        SharedPreferences pref = context.getSharedPreferences(Constant.PREF_NAME,
+                Context.MODE_PRIVATE);
+        SQLiteDatabase db = openDatabase(context);
+
+        String pinyin = Utils.getStringPrefValue(pref, Constant.PREF_PINYIN, id);
+        int maxStrokes = Utils.getIntPrefValue(pref, Constant.PREF_MAX_STROKE, id);
+        int minStrokes = Utils.getIntPrefValue(pref, Constant.PREF_MIN_STROKE, id);
+        int tone = Utils.getIntPrefValue(pref, Constant.PREF_TONE, id);
+
+        HashSet<String> pinyins = new HashSet<String>();
+        if (TextUtils.isEmpty(pinyin)) {
+            Cursor c = db.rawQuery("select * from pinyin", null);
+
+            if (c != null) {
+
+                if (c.getCount() > 0) {
+                    c.moveToFirst();
+                    do {
+                        pinyins.add(c.getString(1));
+                    } while (c.moveToNext());
+                }
+                c.close();
+            }
+
+        } else {
+            pinyins = combineSToSet(pinyin, "@");
+        }
+
+        // StringBuilder query = new
+        // StringBuilder("select hanzi, pinyin from characters");
+        StringBuilder query = new StringBuilder("select hanzi from characters");
+        query.append(" where ");
+
+        if (maxStrokes > 0 || minStrokes > 0) {
+            query.append("( ");
+            if (minStrokes > 0) {
+                query.append("strokes >= ");
+                query.append(minStrokes);
+                if (maxStrokes > 0)
+                    query.append(" and ");
+            }
+            if (maxStrokes > 0) {
+                query.append(" strokes <= ");
+                query.append(maxStrokes);
+            }
+            query.append(" ) and ");
+        }
+
+        if (tone > 0) {
+            query.append(" ( ");
+            boolean first = true;
+            if ((tone & Constant.TONE_1) == Constant.TONE_1) {
+                query.append("tone=1");
+                first = false;
+            }
+            if ((tone & Constant.TONE_2) == Constant.TONE_2) {
+                if (!first)
+                    query.append(" or ");
+                query.append("tone=2");
+                first = false;
+            }
+            if ((tone & Constant.TONE_3) == Constant.TONE_3) {
+                if (!first)
+                    query.append(" or ");
+                query.append("tone=3");
+                first = false;
+            }
+            if ((tone & Constant.TONE_4) == Constant.TONE_4) {
+                if (!first)
+                    query.append(" or ");
+                query.append("tone=4");
+                first = false;
+            }
+            query.append(" ) and ");
+        }
+
+        // query.append("( mostused = 1 ) and ( abandon = 0 )");
+        query.append("( popular = 1 ) and ( abandon = 0 )");
+        query.append(" and (  ");
+
+        String[] temp = pinyins.toArray(new String[pinyins.size()]);
+        for (int i = 0; i < temp.length; i++) {
+            query.append(" pinyin='");
+            query.append(temp[i]);
+            query.append("' ");
+            if (i < (temp.length - 1))
+                query.append("or ");
+        }
+        query.append(" )");
+//        Log.e(TAG, query.toString());
+
+        Cursor c = db.rawQuery(query.toString(), null);
+
+        HashSet<String> chars = new HashSet<String>();
+        if (c != null) {
+//            Log.e(TAG, ""+c.getCount());
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                do {
+                    if (!chars.contains(c.getString(0))) {
+                        chars.add(c.getString(0));
+                    }
+                } while (c.moveToNext());
+            }
+            c.close();
+        }
+
+        ArrayList<String> ret = new ArrayList<String>();
+        ret.addAll(chars);
+        return ret;
+    }
+    
+    public static List<String> query2(Context context, int id) {
 
         SharedPreferences pref = context.getSharedPreferences(Constant.PREF_NAME,
                 Context.MODE_PRIVATE);
@@ -192,8 +337,8 @@ public class Utils {
             query.append(" ) and ");
         }
 
-        query.append("( mostused = 1 ) and ( abandon = 0 )");
-//         query.append("( popular = 1 ) and ( abandon = 0 )");
+//        query.append("( mostused = 1 ) and ( abandon = 0 )");
+         query.append("( popular = 1 ) and ( abandon = 0 )");
 
         Log.d(TAG, query.toString());
 
@@ -201,7 +346,7 @@ public class Utils {
 
         if (c != null) {
             HashSet<String> chars = new HashSet<String>();
-            Log.e(TAG, "" + c.getCount());
+//            Log.e(TAG, "" + c.getCount());
             if (c.getCount() > 0) {
                 c.moveToFirst();
                 do {
@@ -214,12 +359,13 @@ public class Utils {
 
             ArrayList<String> ret = new ArrayList<String>();
             ret.addAll(chars);
+
             return ret;
         }
 
         return null;
-    }
-
+    }    
+    
     public static List<String> doParse(InputStream in) {
         List<String> persons = null;
         String person = null;
@@ -355,6 +501,71 @@ public class Utils {
         }
     }
 
+    public static void updateDB2(Context context) {
+        SQLiteDatabase db1 = openDatabase(context);
+        // clear all the popular flag
+        Cursor c =
+                db1.rawQuery("select _id from characters", null);
+        if (c != null) {
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                do {
+                    int id = c.getInt(0);
+                    ContentValues values = new ContentValues();
+                    values.put("popular", 0);
+                    db1.update("characters", values, "_id = " + id, null);
+                } while (c.moveToNext());
+            }
+            c.close();
+            c = null;
+        }
+
+        SQLiteDatabase db2 = openNameDatabase(context);
+
+        Cursor c1 = db2.rawQuery("select signalNM from signalName", null);
+
+        if (c1 == null) {
+            return;
+        }
+        c1.moveToFirst();
+        do {
+            String zi = c1.getString(0);
+            if (!TextUtils.isEmpty(zi)) {
+                Cursor c2 =
+                        db1.rawQuery("select _id,hanzi from characters where hanzi=?",
+                                new String[] {
+                                    zi
+                                });
+                if (c2 != null) {
+                    if (c2.getCount() > 0) {
+                        c2.moveToFirst();
+                        do {
+                            int id = c2.getInt(0);
+                            ContentValues values = new ContentValues();
+                            values.put("popular", 1);
+                            db1.update("characters", values, "_id = " + id, null);
+                        } while (c2.moveToNext());
+                    }
+                    c2.close();
+                    c2 = null;
+                }
+            }
+        } while (c1.moveToNext());
+
+        c1.close();
+
+        if (db1 != null) {
+            db1.close();
+            db1 = null;
+        }
+
+        if (db2 != null) {
+            db2.close();
+            db2 = null;
+        }
+
+    }    
+    
     /*
      * public static HashSet<String> getAbandonList() { HashSet<String> set =
      * new HashSet<String>(); final File dir = Utils.getAppDir(); File abandon =
@@ -461,9 +672,8 @@ public class Utils {
             sb.append(separator);
         }
         String ret = sb.toString();
-
         if (ret.endsWith(separator)) {
-            ret = ret.substring(0, (ret.length() - 2));
+            ret = ret.substring(0, (ret.length() - 1));
         }
         return ret;
     }
@@ -474,7 +684,8 @@ public class Utils {
         HashSet<String> ret = new HashSet<String>();
         String[] strs = input.split(separator);
         for (String str : strs) {
-            ret.add(str);
+            if (!TextUtils.isEmpty(str))
+                ret.add(str);
         }
         return ret;
     }
@@ -548,19 +759,19 @@ public class Utils {
     }
 
     public static float levenshtein(String str1, String str2) {
-        // 计算两个字符串的长度。
+        // 璁＄畻涓や釜瀛楃涓茬殑闀垮害銆�
         int len1 = str1.length();
         int len2 = str2.length();
-        // 建立上面说的数组，比字符长度大一个空间
+        // 寤虹珛涓婇潰璇寸殑鏁扮粍锛屾瘮瀛楃闀垮害澶т竴涓┖闂�
         int[][] dif = new int[len1 + 1][len2 + 1];
-        // 赋初值，步骤B。
+        // 璧嬪垵鍊硷紝姝ラB銆�
         for (int a = 0; a <= len1; a++) {
             dif[a][0] = a;
         }
         for (int a = 0; a <= len2; a++) {
             dif[0][a] = a;
         }
-        // 计算两个字符是否一样，计算左上的值
+        // 璁＄畻涓や釜瀛楃鏄惁涓�牱锛岃绠楀乏涓婄殑鍊�
         int temp;
         for (int i = 1; i <= len1; i++) {
             for (int j = 1; j <= len2; j++) {
@@ -569,7 +780,7 @@ public class Utils {
                 } else {
                     temp = 1;
                 }
-                // 取三个值中最小的
+                // 鍙栦笁涓�涓渶灏忕殑
                 dif[i][j] = min(dif[i - 1][j - 1] + temp, dif[i][j - 1] + 1, dif[i - 1][j] + 1);
             }
         }
@@ -579,7 +790,7 @@ public class Utils {
         return similarity;
     }
 
-    // 得到最小值
+    // 寰楀埌鏈�皬鍊�
     private static int min(int... is) {
         int min = Integer.MAX_VALUE;
         for (int i : is) {
@@ -591,20 +802,26 @@ public class Utils {
     }
 
     public static void saveToFile(String filename, HashSet<String> toSave) {
+        saveToFile(filename, toSave, false);
+    }
+    
+    public static void saveToFile(String filename, HashSet<String> toSave, boolean append) {
         File file = new File(Utils.getAppDir(), filename);
         if (file.exists()) {
-            file.delete();
-        }
-        try {
-            file.createNewFile();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            return;
+            if (!append)
+                file.delete();
+        } else {
+            try {
+                file.createNewFile();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+                return;
+            }
         }
 
         FileWriter fout = null;
         try {
-            fout = new FileWriter(file);
+            fout = new FileWriter(file,append);
         } catch (IOException e1) {
             e1.printStackTrace();
         }
