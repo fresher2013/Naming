@@ -36,7 +36,10 @@ public class ResultActivity2 extends Activity implements OnClickListener {
     private HashSet<String> mAbandonList = new HashSet<String>();
     private HashSet<String> mCharList = new HashSet<String>();
     private ArrayList<String> mNameList = new ArrayList<String>();
+    private ArrayList<String> mAllNameList = new ArrayList<String>();
     private HashSet<String> mSelected = new HashSet<String>();
+    
+    private int mIndex = 0;
 
     private Scanner mScan;
     private FileWriter mFNewOut;
@@ -71,13 +74,27 @@ public class ResultActivity2 extends Activity implements OnClickListener {
         mTVs[12] = (TextView) row7.findViewById(R.id.tv_1);
         mTVs[13] = (TextView) row7.findViewById(R.id.tv_2);
 
-        Button next = (Button) findViewById(R.id.yes);
+        Button next = (Button) findViewById(R.id.next);
         next.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
-                saveToFile(mFNewOut, mSelected);
-                getNext();
+                int count = (mAllNameList.size() / COUNT);
+                mIndex++;
+                mIndex = (mIndex >= count) ? (count - 1) : mIndex;
+                getNameList();
+                updateView();
+            }
+        });
+        
+        Button prev = (Button) findViewById(R.id.prev);
+        prev.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mIndex--;
+                mIndex = mIndex < 0 ? 0 : mIndex;
+                getNameList();
                 updateView();
             }
         });
@@ -121,13 +138,14 @@ public class ResultActivity2 extends Activity implements OnClickListener {
         try {
             output.createNewFile();
             mScan = new Scanner(input);
+            getALL();
             mFNewOut = new FileWriter(output, true);
             // mFAbandonOut = new FileOutputStream(abandon, true);
         } catch (FileNotFoundException e) {
         } catch (IOException e) {
         }
 
-        getNext();
+        getNameList();
     }
 
     @Override
@@ -136,6 +154,12 @@ public class ResultActivity2 extends Activity implements OnClickListener {
         updateView();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveToFile(mFNewOut, mSelected);
+    }
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -169,7 +193,33 @@ public class ResultActivity2 extends Activity implements OnClickListener {
 
     }
 
-    private boolean getNext() {
+    private int getALL() {
+        if (mScan != null) {
+            mAllNameList.clear();
+            while (mScan.hasNextLine()) {
+                String line = mScan.nextLine();
+                mAllNameList.add(line);
+            }
+        }
+        return mAllNameList.size();
+    }
+    
+    private void getNameList() {
+        for (int i = 0; i < mTVs.length; i++) {
+            mTVs[i].setTag(Boolean.FALSE);
+            mTVs[i].setBackgroundResource(android.R.color.background_light);
+        }
+        mNameList.clear();
+        for (int i = 0; i < mTVs.length; i++) {
+            String name = mAllNameList.get(i + mIndex * COUNT);
+            if (TextUtils.isEmpty(name)) {
+                return;
+            }
+            mNameList.add(name);
+        }
+    }
+    
+    private boolean getNext2() {
         
         for (int i = 0; i < mTVs.length; i++) {
             mTVs[i].setTag(Boolean.FALSE);

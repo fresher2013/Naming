@@ -7,8 +7,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -16,14 +18,17 @@ import java.util.Scanner;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.R.integer;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
+import android.widget.Toast;
 
 public class Utils {
 
@@ -844,4 +849,142 @@ public class Utils {
         }
     }
 
+    private static String getChar(String str, int index) {
+        if (!TextUtils.isEmpty(str)) {
+            char[] chars = str.toCharArray();
+            if (index >= chars.length) {
+                return null;
+            }
+            return new String(chars, index, 1);
+        }
+        return null;
+    }
+    
+    public static void test1(Context context) {
+        final File dir = Utils.getAppDir();
+        File input = new File(dir, "result.txt");
+        if (!input.exists()) {
+            Toast.makeText(context, "No result.txt found.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        SQLiteDatabase db = openDatabase(context);
+        Scanner scaner = null;
+        try {
+            ArrayList<String> char1 = new ArrayList<String>();
+            ArrayList<String> char2 = new ArrayList<String>();
+            HashSet<String> chars = new HashSet<String>();
+            scaner = new Scanner(input);
+            if (scaner != null) {
+                while (scaner.hasNextLine()) {
+                    String line = scaner.nextLine();
+                    String name1 = getChar(line, 1);
+                    String name2 = getChar(line, 2);
+                    if (!(char1.contains(name1) || char2.contains(name1))) {
+                        int tone1 = getHanziTone(db, name1);
+                        Log.d("wangsl", "name1 "+name1+" "+tone1);
+                        if (tone1 == 2 || tone1 == 1) {
+                            char1.add(name1);
+                        } else if (tone1 == 4 || tone1 == 3) {
+                            char2.add(name1);
+                        }
+                    }
+                    if (!(char1.contains(name2) || char2.contains(name2))) {
+                        int tone1 = getHanziTone(db, name2);
+                        Log.d("wangsl", "name2 "+name2+" "+tone1);
+                        if (tone1 == 2 || tone1 == 1) {
+                            char1.add(name2);
+                        } else if (tone1 == 4 || tone1 == 3) {
+                            char2.add(name2);
+                        }
+                    }
+                }
+                save(db,char1,char2);
+                Log.d("wangsl", "ok");
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            db.close();
+            if (scaner != null)
+                scaner.close();
+        }
+    }
+    
+    private static int getHanziTone(SQLiteDatabase db, String hanzi){
+        
+        int tone = 0;
+        
+        StringBuilder query = new StringBuilder("select tone from characters");
+        query.append(" where hanzi = '");
+        query.append(hanzi);
+        query.append("'");
+        
+        Cursor c = db.rawQuery(query.toString(), null);
+        if(c!=null){
+            if(c.getCount()>0 && c.moveToFirst()){
+                tone = c.getInt(0);
+            }
+            c.close();
+        }
+        return tone;
+    }
+    
+    private static void save(SQLiteDatabase db, ArrayList<String> mResult1,ArrayList<String> mResult2) {
+
+        StringBuilder sb1 = new StringBuilder();
+        sb1.append("result-");
+        sb1.append(new SimpleDateFormat("MMddHHmm").format(new Date(System
+                .currentTimeMillis())));
+        sb1.append(".txt");
+
+        File result = new File(Utils.getAppDir(), sb1.toString());
+        if (result.exists()) {
+            result.delete();
+        }
+        try {
+            result.createNewFile();
+        } catch (IOException e) {
+        }
+
+        FileWriter fw = null;
+
+        try {
+            fw = new FileWriter(result);
+
+            int size1 = mResult1.size();
+            int size2 = mResult2.size();
+            long size = (size1 * size2);
+
+            String[] chars1 = mResult1.toArray(new String[size1]);
+            String[] chars2 = mResult2.toArray(new String[size2]);
+
+            for (int i = 0; i < size; i++) {
+                String character1 = chars1[(int) (i % size1)];
+                String character2 = chars2[(int) (i % size2)];
+
+                if (!Utils.isGood(db, character1, character2)) {
+                    continue;
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("王");
+                sb.append(character1);
+                sb.append(character2);
+                fw.write(sb.toString());
+                fw.write('\n');
+            }
+            fw.flush();
+            fw.close();
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        } finally {
+            if (fw != null)
+                try {
+                    fw.close();
+                } catch (IOException e) {
+                }
+        }
+    }
+    
 }

@@ -117,7 +117,7 @@ public class MainActivity extends Activity {
                 MainActivity.this.startActivityForResult(it, 1);
             }
         });
-        
+
         Button review1 = (Button) findViewById(R.id.review1);
         review1.setOnClickListener(new OnClickListener() {
 
@@ -245,12 +245,12 @@ public class MainActivity extends Activity {
                                 sb.append(character2);
                                 fw.write(sb.toString());
                                 fw.write('\n');
-//                                StringBuilder sb2 = new StringBuilder();
-//                                sb2.append(familyname);
-//                                sb2.append(character2);
-//                                sb2.append(character1);
-//                                fw.write(sb2.toString());
-//                                fw.write('\n');
+                                // StringBuilder sb2 = new StringBuilder();
+                                // sb2.append(familyname);
+                                // sb2.append(character2);
+                                // sb2.append(character1);
+                                // fw.write(sb2.toString());
+                                // fw.write('\n');
                             }
                             fw.flush();
                             fw.close();
@@ -328,7 +328,7 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_item_result) {
 
-            Intent it = new Intent(MainActivity.this, ResultActivity2.class);
+            Intent it = new Intent(MainActivity.this, ResultActivity.class);
             MainActivity.this.startActivity(it);
 
             return true;
@@ -345,6 +345,21 @@ public class MainActivity extends Activity {
             Intent it = new Intent(MainActivity.this, AbandonChars.class);
             MainActivity.this.startActivity(it);
 
+        } else if (item.getItemId() == R.id.menu_item_result2) {
+
+            Intent it = new Intent(MainActivity.this, ResultActivity2.class);
+            MainActivity.this.startActivity(it);
+
+            return true;
+        } else if (item.getItemId() == R.id.menu_item_test) {
+
+            new Thread() {
+                public void run() {
+                    Utils.test1(MainActivity.this);
+                };
+            }.start();
+
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

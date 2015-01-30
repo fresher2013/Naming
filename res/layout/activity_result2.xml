@@ -70,9 +70,18 @@
         a:paddingTop="@dimen/activity_vertical_margin" >
 
         <Button
-            a:id="@+id/yes"
+            a:id="@+id/prev"
             a:layout_width="fill_parent"
             a:layout_height="wrap_content"
+            a:layout_weight="1"
+            a:gravity="center"
+            a:text="prev" />
+
+        <Button
+            a:id="@+id/next"
+            a:layout_width="fill_parent"
+            a:layout_height="wrap_content"
+            a:layout_weight="1"
             a:gravity="center"
             a:text="next" />
     </LinearLayout>
