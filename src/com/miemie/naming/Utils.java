@@ -870,35 +870,61 @@ public class Utils {
         SQLiteDatabase db = openDatabase(context);
         Scanner scaner = null;
         try {
-            ArrayList<String> char1 = new ArrayList<String>();
-            ArrayList<String> char2 = new ArrayList<String>();
-            HashSet<String> chars = new HashSet<String>();
+            HashSet<String> char1 = new HashSet<String>();
+            HashSet<String> char2 = new HashSet<String>();
+            HashSet<String> pinyin = new HashSet<String>();
             scaner = new Scanner(input);
             if (scaner != null) {
                 while (scaner.hasNextLine()) {
                     String line = scaner.nextLine();
                     String name1 = getChar(line, 1);
                     String name2 = getChar(line, 2);
-                    if (!(char1.contains(name1) || char2.contains(name1))) {
-                        int tone1 = getHanziTone(db, name1);
-                        Log.d("wangsl", "name1 "+name1+" "+tone1);
-                        if (tone1 == 2 || tone1 == 1) {
+                    String pinyin1 = getHanziToneAndPinyin(db, name1);
+                    String pinyin2 = getHanziToneAndPinyin(db, name2);
+                    if(!pinyin.contains(pinyin1)){
+                        pinyin.add(pinyin1);
+                        int tone = getHanziTone(db, name1);
+                        if (tone == 2 || tone == 1) {
                             char1.add(name1);
-                        } else if (tone1 == 4 || tone1 == 3) {
+                        } else if (tone == 4 || tone == 3) {
                             char2.add(name1);
                         }
                     }
-                    if (!(char1.contains(name2) || char2.contains(name2))) {
-                        int tone1 = getHanziTone(db, name2);
-                        Log.d("wangsl", "name2 "+name2+" "+tone1);
-                        if (tone1 == 2 || tone1 == 1) {
+                    
+                    if(!pinyin.contains(pinyin2)){
+                        pinyin.add(pinyin2);
+                        int tone = getHanziTone(db, name2);
+                        if (tone == 2 || tone == 1) {
                             char1.add(name2);
-                        } else if (tone1 == 4 || tone1 == 3) {
+                        } else if (tone == 4 || tone == 3) {
                             char2.add(name2);
                         }
                     }
+                    
+//                    int tone1 = getHanziTone(db, name1);
+//                    int tone2 = getHanziTone(db, name2);
+//                    
+//                    
+//                    if (!(char1.contains(name1) || char2.contains(name1))) {
+//                        int tone = getHanziTone(db, name1);
+//                        if (tone == 2 || tone == 1) {
+//                            char1.add(name1);
+//                        } else if (tone == 4 || tone == 3) {
+//                            char2.add(name1);
+//                        }
+//                    }
+//                    if (!(char1.contains(name2) || char2.contains(name2))) {
+//                        int tone = getHanziTone(db, name2);
+//                        if (tone == 2 || tone == 1) {
+//                            char1.add(name2);
+//                        } else if (tone == 4 || tone == 3) {
+//                            char2.add(name2);
+//                        }
+//                    }
                 }
-                save(db,char1,char2);
+                Log.d("wangsl", "char1: " + char1.size());
+                Log.d("wangsl", "char2: " + char2.size());
+                save(db, char2, char1);
                 Log.d("wangsl", "ok");
             }
         } catch (FileNotFoundException e) {
@@ -930,7 +956,30 @@ public class Utils {
         return tone;
     }
     
-    private static void save(SQLiteDatabase db, ArrayList<String> mResult1,ArrayList<String> mResult2) {
+    private static String getHanziToneAndPinyin(SQLiteDatabase db, String hanzi){
+        
+        int tone = 0;
+        
+        StringBuilder query = new StringBuilder("select tone, pinyin from characters");
+        query.append(" where hanzi = '");
+        query.append(hanzi);
+        query.append("'");
+        StringBuilder sb  = new StringBuilder();
+        Cursor c = db.rawQuery(query.toString(), null);
+        if(c!=null){
+            if(c.getCount()>0 && c.moveToFirst()){
+                tone = c.getInt(0);
+                sb.append(c.getString(1));
+                sb.append("(");
+                sb.append(tone);
+                sb.append(")");
+            }
+            c.close();
+        }
+        return sb.toString();
+    }
+    
+    private static void save(SQLiteDatabase db, HashSet<String> mResult1, HashSet<String> mResult2) {
 
         StringBuilder sb1 = new StringBuilder();
         sb1.append("result-");
